@@ -1,0 +1,6 @@
+{
+  "name": "មង្គលការ - Wedding E-Invitation Builder",
+  "description": "ប្រព័ន្ធបង្កើតធៀបការអេឡិចត្រូនិក និងកាតអាពាហ៍ពិពាហ៍ឌីជីថលបែបខ្មែរទាន់សម័យ (Khmer Digital Wedding E-Invitation Platform with Template Customization)",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

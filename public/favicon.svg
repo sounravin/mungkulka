@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+  <defs>
+    <linearGradient id="goldGradFav" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#F5D77F"/>
+      <stop offset="50%" stop-color="#D4AF37"/>
+      <stop offset="100%" stop-color="#8C6D3B"/>
+    </linearGradient>
+    <linearGradient id="blueGradFav" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1E3A8A"/>
+      <stop offset="100%" stop-color="#0F172A"/>
+    </linearGradient>
+  </defs>
+  <!-- Outer Gold Frame -->
+  <circle cx="64" cy="64" r="62" fill="#FFFFFF" stroke="url(#goldGradFav)" stroke-width="4"/>
+  <circle cx="64" cy="64" r="54" fill="none" stroke="url(#blueGradFav)" stroke-width="5"/>
+  <circle cx="64" cy="64" r="49" fill="none" stroke="url(#goldGradFav)" stroke-width="2"/>
+  
+  <!-- "ម.ក" Initials -->
+  <text x="64" y="66" text-anchor="middle" font-family="'Moul', 'Battambang', serif" font-weight="bold" font-size="32" fill="url(#goldGradFav)">
+    ម.ក
+  </text>
+  
+  <!-- "មង្គលការ" Subtitle -->
+  <text x="64" y="88" text-anchor="middle" font-family="'Moul', 'Battambang', serif" font-size="14" fill="url(#blueGradFav)">
+    មង្គលការ
+  </text>
+</svg>

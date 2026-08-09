@@ -1,0 +1,98 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <!-- Gold Gradient -->
+    <linearGradient id="goldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#F5D77F"/>
+      <stop offset="30%" stop-color="#D4AF37"/>
+      <stop offset="70%" stop-color="#AA7C11"/>
+      <stop offset="100%" stop-color="#785307"/>
+    </linearGradient>
+
+    <!-- Light Gold Gradient -->
+    <linearGradient id="goldLightGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#FFF3D1"/>
+      <stop offset="50%" stop-color="#E5C158"/>
+      <stop offset="100%" stop-color="#9E7618"/>
+    </linearGradient>
+
+    <!-- Deep Blue Gradient -->
+    <linearGradient id="blueGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1E3A8A"/>
+      <stop offset="50%" stop-color="#172554"/>
+      <stop offset="100%" stop-color="#0F172A"/>
+    </linearGradient>
+
+    <!-- Outer Shadow -->
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="6" stdDeviation="8" flood-color="#000000" flood-opacity="0.18"/>
+    </filter>
+  </defs>
+
+  <g filter="url(#shadow)">
+    <!-- Background Circle for SVG Canvas -->
+    <circle cx="256" cy="256" r="248" fill="#FFFFFF"/>
+
+    <!-- Outer Decorative Khmer Floral Ring (Gold Kbach Points) -->
+    <!-- 8 Outer Floral Points -->
+    <g fill="url(#goldGrad)">
+      <!-- Top Point -->
+      <path d="M 256,12 C 248,28 240,36 256,52 C 272,36 264,28 256,12 Z"/>
+      <!-- Bottom Point -->
+      <path d="M 256,500 C 248,484 240,476 256,460 C 272,476 264,484 256,500 Z"/>
+      <!-- Left Point -->
+      <path d="M 12,256 C 28,248 36,240 52,256 C 36,272 28,264 12,256 Z"/>
+      <!-- Right Point -->
+      <path d="M 500,256 C 484,248 476,240 460,256 C 476,272 484,264 500,256 Z"/>
+      <!-- Top Left Point -->
+      <path d="M 83,83 C 99,91 103,103 111,111 C 103,103 91,99 83,83 Z"/>
+      <!-- Top Right Point -->
+      <path d="M 429,83 C 413,91 409,103 401,111 C 409,103 421,99 429,83 Z"/>
+      <!-- Bottom Left Point -->
+      <path d="M 83,429 C 99,421 103,409 111,401 C 103,409 91,421 83,429 Z"/>
+      <!-- Bottom Right Point -->
+      <path d="M 429,429 C 413,421 409,409 401,401 C 409,409 421,421 429,429 Z"/>
+    </g>
+
+    <!-- Outer Gold Ring -->
+    <circle cx="256" cy="256" r="232" fill="none" stroke="url(#goldGrad)" stroke-width="8"/>
+
+    <!-- Middle Navy Blue Band with Floral Pattern Rim -->
+    <circle cx="256" cy="256" r="218" fill="none" stroke="url(#blueGrad)" stroke-width="16"/>
+
+    <!-- Inner Gold Ring -->
+    <circle cx="256" cy="256" r="202" fill="none" stroke="url(#goldGrad)" stroke-width="6"/>
+
+    <!-- Inner White Core Canvas -->
+    <circle cx="256" cy="256" r="198" fill="#FFFFFF"/>
+
+    <!-- Inner Fine Gold Accent Circle -->
+    <circle cx="256" cy="256" r="186" fill="none" stroke="url(#goldGrad)" stroke-width="2" stroke-dasharray="8 4"/>
+
+    <!-- LOGO GRAPHICS & TYPOGRAPHY -->
+
+    <!-- Top Emblem: Lotus & Endless Knot Symbol -->
+    <g transform="translate(256, 118)">
+      <!-- Lotus Flower -->
+      <path d="M 0,-18 C -6,-10 -12,-2 0,6 C 12,-2 6,-10 0,-18 Z" fill="url(#goldGrad)"/>
+      <path d="M -2,-14 C -12,-12 -18,-2 -10,4 C -4,-2 -2,-8 -2,-14 Z" fill="url(#goldGrad)"/>
+      <path d="M 2,-14 C 12,-12 18,-2 10,4 C 4,-2 2,-8 2,-14 Z" fill="url(#goldGrad)"/>
+
+      <!-- Endless Knot / Unalom Ornament -->
+      <path d="M -12,12 C -20,12 -20,0 -12,0 C -4,0 -4,20 12,20 C 20,20 20,8 12,8 C 4,8 4,-12 -12,-12" fill="none" stroke="url(#goldGrad)" stroke-width="3" stroke-linecap="round"/>
+    </g>
+
+    <!-- Center Khmer Initials: "ម.ក" -->
+    <!-- Stylized Gold Text with Traditional Ornamentation -->
+    <text x="256" y="270" text-anchor="middle" font-family="'Moul', 'Battambang', serif" font-weight="bold" font-size="112" fill="url(#goldGrad)" letter-spacing="4">
+      ម.ក
+    </text>
+
+    <!-- Center Separator Ornament Dot -->
+    <circle cx="256" cy="286" r="6" fill="url(#goldGrad)"/>
+
+    <!-- Bottom Khmer Text: "មង្គលការ" -->
+    <text x="256" y="358" text-anchor="middle" font-family="'Moul', 'Battambang', serif" font-size="52" fill="url(#blueGrad)" letter-spacing="2">
+      មង្គលការ
+    </text>
+  </g>
+</svg>

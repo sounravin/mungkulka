@@ -1,0 +1,29 @@
+{
+  "name": "មង្គលការ (MongkulKar) - Khmer Digital Wedding E-Invitation Builder",
+  "short_name": "មង្គលការ",
+  "description": "កម្មវិធីបង្កើតលិខិតអញ្ជើញអាពាហ៍ពិពាហ៍ឌីជីថល (Khmer Digital Wedding E-Invitation Builder)",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "128x128",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/logo.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/apple-touch-icon.svg",
+      "sizes": "180x180",
+      "type": "image/svg+xml",
+      "purpose": "apple touch icon"
+    }
+  ],
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#FAF7F2",
+  "theme_color": "#B8860B"
+}

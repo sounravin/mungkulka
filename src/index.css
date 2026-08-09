@@ -1,0 +1,168 @@
+@import "tailwindcss";
+
+/* Global Base Styles for Khmer Font Clarity & Readability */
+body {
+  font-family: 'Kantumruy Pro', 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+  line-height: 1.65;
+  letter-spacing: 0.01em;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  line-height: 1.5;
+  letter-spacing: normal;
+}
+
+@layer utilities {
+  .font-moul {
+    font-family: 'Moul', 'Playfair Display', 'Kantumruy Pro', serif;
+    line-height: 1.6;
+    letter-spacing: 0.02em;
+  }
+  .font-kantumruy {
+    font-family: 'Kantumruy Pro', 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+    line-height: 1.65;
+  }
+  .font-battambang {
+    font-family: 'Battambang', 'Plus Jakarta Sans', sans-serif;
+    line-height: 1.65;
+  }
+  .font-playfair {
+    font-family: 'Playfair Display', 'Moul', serif;
+    line-height: 1.4;
+  }
+  .font-sans {
+    font-family: 'Kantumruy Pro', 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+    line-height: 1.65;
+  }
+}
+
+/* Gold Gradient Text & Effects */
+.text-gold-gradient {
+  background: linear-gradient(135deg, #B8860B 0%, #E6C687 35%, #996515 70%, #D4AF37 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.text-gold-bright {
+  background: linear-gradient(135deg, #F3E5AB 0%, #D4AF37 50%, #AA7C11 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.bg-gold-gradient {
+  background: linear-gradient(135deg, #C59B27 0%, #E8C8A3 50%, #9E7412 100%);
+}
+
+.bg-gold-soft {
+  background: linear-gradient(135deg, #FFFDF8 0%, #F8F1E5 100%);
+}
+
+/* Custom Scrollbar for phone frame */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Gate open animation */
+@keyframes pulseGlow {
+  0%, 100% {
+    box-shadow: 0 0 15px rgba(212, 175, 55, 0.3);
+  }
+  50% {
+    box-shadow: 0 0 30px rgba(212, 175, 55, 0.6);
+  }
+}
+
+.animate-pulse-glow {
+  animation: pulseGlow 2.5s infinite ease-in-out;
+}
+
+/* Custom Template Photo Slide Animations */
+@keyframes jadeSlideUp {
+  0% {
+    opacity: 0.1;
+    transform: translateY(45px) scale(0.92);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes laurelRotateOrbit {
+  0% {
+    opacity: 0.2;
+    transform: rotate(-8deg) scale(0.85);
+  }
+  50% {
+    transform: rotate(3deg) scale(1.04);
+  }
+  100% {
+    opacity: 1;
+    transform: rotate(0deg) scale(1);
+  }
+}
+
+@keyframes verdeWaveMorph {
+  0% {
+    opacity: 0.2;
+    transform: translateX(-35px) skewX(-3deg);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0) skewX(0deg);
+  }
+}
+
+@keyframes museKenBurns {
+  0% {
+    opacity: 0.2;
+    transform: scale(1.22) translateY(12px);
+    filter: contrast(1.15) brightness(0.85);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+    filter: contrast(1) brightness(1);
+  }
+}
+
+@keyframes halcyonShimmerFade {
+  0% {
+    opacity: 0.1;
+    transform: scale(0.94);
+    filter: blur(8px) saturate(1.6);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+    filter: blur(0px) saturate(1);
+  }
+}
+
+.animate-jade-slide {
+  animation: jadeSlideUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-laurel-rotate {
+  animation: laurelRotateOrbit 0.9s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+.animate-verde-wave {
+  animation: verdeWaveMorph 0.85s ease-out forwards;
+}
+
+.animate-muse-zoom {
+  animation: museKenBurns 1.1s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+}
+
+.animate-halcyon-shimmer {
+  animation: halcyonShimmerFade 0.9s ease-out forwards;
+}
+
+

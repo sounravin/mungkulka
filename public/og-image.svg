@@ -1,0 +1,87 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" width="1200" height="630">
+  <defs>
+    <!-- Gold Gradient -->
+    <linearGradient id="ogGold" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#F5D77F"/>
+      <stop offset="40%" stop-color="#D4AF37"/>
+      <stop offset="80%" stop-color="#B8860B"/>
+      <stop offset="100%" stop-color="#785307"/>
+    </linearGradient>
+
+    <!-- Deep Blue Gradient -->
+    <linearGradient id="ogBlue" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1E3A8A"/>
+      <stop offset="100%" stop-color="#0F172A"/>
+    </linearGradient>
+
+    <!-- Background Cream Gradient -->
+    <linearGradient id="ogBg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FAF7F2"/>
+      <stop offset="50%" stop-color="#F4EFE6"/>
+      <stop offset="100%" stop-color="#E8DFC2"/>
+    </linearGradient>
+
+    <!-- Drop Shadow -->
+    <filter id="ogShadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="12" stdDeviation="16" flood-color="#2C1838" flood-opacity="0.15"/>
+    </filter>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1200" height="630" fill="url(#ogBg)"/>
+
+  <!-- Decorative Outer Gold Frame -->
+  <rect x="24" y="24" width="1152" height="582" rx="28" fill="none" stroke="url(#ogGold)" stroke-width="4"/>
+  <rect x="36" y="36" width="1128" height="558" rx="20" fill="none" stroke="#D4AF37" stroke-width="1" stroke-dasharray="8 6"/>
+
+  <!-- Left: Official Logo Circle -->
+  <g transform="translate(240, 315)" filter="url(#ogShadow)">
+    <circle cx="0" cy="0" r="190" fill="#FFFFFF" stroke="url(#ogGold)" stroke-width="8"/>
+    <circle cx="0" cy="0" r="172" fill="none" stroke="url(#ogBlue)" stroke-width="14"/>
+    <circle cx="0" cy="0" r="156" fill="none" stroke="url(#ogGold)" stroke-width="4"/>
+    <circle cx="0" cy="0" r="150" fill="#FFFFFF"/>
+
+    <!-- Lotus Top -->
+    <path d="M 0,-115 C -8,-100 -12,-90 0,-80 C 12,-90 8,-100 0,-115 Z" fill="url(#ogGold)"/>
+
+    <!-- Initials "ម.ក" -->
+    <text x="0" y="20" text-anchor="middle" font-family="'Moul', 'Battambang', serif" font-weight="bold" font-size="96" fill="url(#ogGold)">
+      ម.ក
+    </text>
+
+    <!-- Subtitle "មង្គលការ" -->
+    <text x="0" y="92" text-anchor="middle" font-family="'Moul', 'Battambang', serif" font-size="44" fill="url(#ogBlue)">
+      មង្គលការ
+    </text>
+  </g>
+
+  <!-- Right: Title & App Description -->
+  <g transform="translate(500, 160)">
+    <!-- Badge Tag -->
+    <rect x="0" y="0" width="380" height="42" rx="21" fill="url(#ogBlue)"/>
+    <text x="190" y="27" text-anchor="middle" font-family="'Battambang', sans-serif" font-weight="bold" font-size="18" fill="#F5D77F">
+      ★ អាពាហ៍ពិពាហ៍ឌីជីថល - DIGITAL INVITATION
+    </text>
+
+    <!-- Main Title -->
+    <text x="0" y="120" font-family="'Moul', 'Battambang', serif" font-size="52" fill="url(#ogGold)" filter="url(#ogShadow)">
+      មង្គលការ (MongkulKar)
+    </text>
+
+    <!-- Tagline Subtitle -->
+    <text x="0" y="180" font-family="'Moul', 'Battambang', serif" font-size="28" fill="#2C2420">
+      កម្មវិធីបង្កើតលិខិតអញ្ជើញអាពាហ៍ពិពាហ៍ឌីជីថល
+    </text>
+
+    <text x="0" y="225" font-family="'Battambang', sans-serif" font-size="22" fill="#5C4D3C">
+      Khmer Digital Wedding E-Invitation Builder & Studio
+    </text>
+
+    <!-- Bullet Highlights -->
+    <g transform="translate(0, 275)" font-family="'Battambang', sans-serif" font-size="20" font-weight="bold" fill="#3D2513">
+      <text x="0" y="0">✓ រចនាបថគំរូធៀបការខ្មែរស្អាតៗ និងទំនើប</text>
+      <text x="0" y="38">✓ បង្កើតលិខិតអញ្ជើញបានភ្លាមៗ ជាមួយ QR Code & MP3</text>
+      <text x="0" y="76">✓ ងាយស្រួលចែករំលែកតាម Telegram, Messenger, Facebook</text>
+    </g>
+  </g>
+</svg>

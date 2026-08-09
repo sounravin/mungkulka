@@ -307,16 +307,51 @@ async function startServer() {
   });
 
   // Get Admin Members List
+  // Get Admin Members List
   app.get("/api/admin/members", (req, res) => {
-    res.json(dbData.members);
+    // Return registered user members (excluding system admin account)
+    const userMembers = dbData.members.filter((m) => m.phone !== "admin" && m.id !== "admin");
+    res.json(userMembers);
+  });
+
+  // Delete Member Account (Admin)
+  app.delete("/api/admin/members/:id", (req, res) => {
+    const memberId = req.params.id;
+    dbData.members = dbData.members.filter((m) => m.id !== memberId && m.phone !== memberId);
+    saveData(dbData);
+    broadcastRealtime("MEMBER_UPDATED", { deletedId: memberId });
+    res.json({ success: true, members: dbData.members });
   });
 
   // Get current member info by phone
   app.get("/api/members/current", (req, res) => {
-    const phone = (req.query.phone as string)?.trim().replace(/\s+/g, "");
+    const rawPhone = (req.query.phone as string)?.trim() || "";
+    const phone = rawPhone.replace(/\s+/g, "");
     if (!phone) {
       return res.status(400).json({ error: "Phone required" });
     }
+
+    if (phone === "admin" || rawPhone.toLowerCase() === "admin") {
+      const adminAcc: MemberAccount = {
+        id: "admin",
+        name: "គណនី Admin System",
+        phone: "admin",
+        password: "admin",
+        createdAt: new Date().toISOString(),
+        lastLoginAt: new Date().toISOString(),
+        activatedPackage: {
+          packageType: "35",
+          activationCode: "ADMIN-VIP",
+          memberName: "Admin System",
+          memberPhone: "admin",
+          maxPhotos: 10,
+          unlockedAt: new Date().toISOString(),
+        },
+        notifications: [],
+      };
+      return res.json(adminAcc);
+    }
+
     const member = dbData.members.find((m) => m.phone.replace(/\s+/g, "") === phone);
     if (!member) {
       return res.status(404).json({ error: "Member not found" });
@@ -378,7 +413,8 @@ async function startServer() {
   // Login Member
   app.post("/api/auth/login", (req, res) => {
     const { phone, password } = req.body;
-    const trimmedPhone = phone ? String(phone).trim().replace(/\s+/g, "") : "";
+    const rawInput = phone ? String(phone).trim() : "";
+    const trimmedPhone = rawInput.replace(/\s+/g, "");
     const trimmedPassword = password ? String(password).trim() : "";
 
     if (!trimmedPhone) {
@@ -386,6 +422,33 @@ async function startServer() {
     }
     if (!trimmedPassword) {
       return res.status(400).json({ error: "សូមបញ្ចូលពាក្យសម្ងាត់ (Please enter password)" });
+    }
+
+    // Admin Login support
+    if (trimmedPhone.toLowerCase() === "admin" || rawInput.toLowerCase() === "admin") {
+      if (trimmedPassword === "admin" || trimmedPassword === "admin123") {
+        const adminAcc: MemberAccount = {
+          id: "admin",
+          name: "គណនី Admin System",
+          phone: "admin",
+          password: "admin",
+          createdAt: new Date().toISOString(),
+          lastLoginAt: new Date().toISOString(),
+          activatedPackage: {
+            packageType: "35",
+            activationCode: "ADMIN-VIP",
+            memberName: "Admin System",
+            memberPhone: "admin",
+            maxPhotos: 10,
+            unlockedAt: new Date().toISOString(),
+          },
+          notifications: [],
+        };
+        broadcastRealtime("MEMBER_LOGIN", adminAcc);
+        return res.json(adminAcc);
+      } else {
+        return res.status(400).json({ error: "ពាក្យសម្ងាត់ Admin មិនត្រឹមត្រូវឡើយ! (admin / admin123)" });
+      }
     }
 
     const member = dbData.members.find((m) => m.phone.replace(/\s+/g, "") === trimmedPhone);

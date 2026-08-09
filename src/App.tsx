@@ -438,7 +438,9 @@ export default function App() {
           }}
           onMemberLoggedIn={(member) => {
             setLoggedMember(member);
-            if (member.activatedPackage) {
+            if (member.id === 'admin' || member.phone === 'admin') {
+              setCurrentView('admin');
+            } else if (member.activatedPackage) {
               setUnlockedPackage(member.activatedPackage);
             }
           }}

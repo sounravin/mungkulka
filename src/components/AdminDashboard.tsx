@@ -245,15 +245,13 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ lang, onExitAdmi
     }
   };
 
-  // Load registered member accounts from Cloud API
+  // Load registered member accounts from Cloud API / Storage
   const loadMembers = async () => {
     try {
-      const res = await safeFetchJson('/api/admin/members');
-      if (res.ok && res.data) {
-        setMembers(res.data);
-      }
+      const memberList = await getMembers();
+      setMembers(memberList);
     } catch (e) {
-      console.warn('Could not fetch members from cloud server:', e);
+      console.warn('Could not fetch members:', e);
     }
   };
 

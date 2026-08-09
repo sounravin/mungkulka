@@ -71,6 +71,28 @@ export const fetchCurrentLoggedMember = async (): Promise<MemberAccount | null> 
   const phone = sessionStorage.getItem(LOGGED_PHONE_KEY);
   if (!phone) return null;
 
+  if (phone === 'admin' || sessionStorage.getItem('mongkulkar_admin_auth') === 'true') {
+    const adminAcc: MemberAccount = {
+      id: 'admin',
+      name: 'គណនី Admin System',
+      phone: 'admin',
+      password: 'admin',
+      createdAt: new Date().toISOString(),
+      lastLoginAt: new Date().toISOString(),
+      activatedPackage: {
+        packageType: '35',
+        activationCode: 'ADMIN-VIP',
+        memberName: 'Admin System',
+        memberPhone: 'admin',
+        maxPhotos: 10,
+        unlockedAt: new Date().toISOString(),
+      },
+      notifications: [],
+    };
+    inMemoryLoggedMember = adminAcc;
+    return adminAcc;
+  }
+
   try {
     const res = await safeFetchJson<MemberAccount>(`/api/members/current?phone=${encodeURIComponent(phone)}`);
     if (res.ok && res.data) {
@@ -99,17 +121,40 @@ export const logoutMember = () => {
   notifyRealtimeEvent('MEMBER_LOGOUT');
 };
 
-// Fetch all registered members from Cloud server
+// Fetch all registered members from Cloud server and merge with local backup
 export const getMembers = async (): Promise<MemberAccount[]> => {
+  let serverMembers: MemberAccount[] = [];
   try {
     const res = await safeFetchJson<MemberAccount[]>('/api/admin/members');
     if (res.ok && Array.isArray(res.data)) {
-      return res.data;
+      serverMembers = res.data;
     }
   } catch (err) {
     console.warn('Could not fetch members from cloud server:', err);
   }
-  return getLocalMembersBackup();
+
+  const localList = getLocalMembersBackup();
+  const map = new Map<string, MemberAccount>();
+
+  serverMembers.forEach((m) => {
+    if (m.phone !== 'admin' && m.id !== 'admin') {
+      const key = m.phone ? m.phone.replace(/\s+/g, '') : m.id;
+      map.set(key, m);
+    }
+  });
+
+  localList.forEach((m) => {
+    if (m.phone !== 'admin' && m.id !== 'admin' && m.id !== 'mem-demo-1') {
+      const key = m.phone ? m.phone.replace(/\s+/g, '') : m.id;
+      if (!map.has(key)) {
+        map.set(key, m);
+      }
+    } else if (m.id === 'mem-demo-1' && !map.has('012345678')) {
+      map.set('012345678', m);
+    }
+  });
+
+  return Array.from(map.values());
 };
 
 // Login member via Cloud API or Local Fallback

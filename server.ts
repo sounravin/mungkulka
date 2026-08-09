@@ -24,6 +24,7 @@ interface ServerData {
   };
   invitations?: Record<string, any>;
   customTemplates?: TemplateTheme[];
+  templateOverrides?: Record<string, any>;
 }
 
 // Initial default seed
@@ -130,9 +131,35 @@ async function startServer() {
     });
   });
 
-  // Get Custom Uploaded Templates List
+  // Get Custom Uploaded Templates & Overrides List
   app.get("/api/templates", (req, res) => {
-    res.json(dbData.customTemplates || []);
+    res.json({
+      customTemplates: dbData.customTemplates || [],
+      overrides: dbData.templateOverrides || {},
+    });
+  });
+
+  // Save / Publish All Templates & Overrides to User Members (Admin)
+  app.post("/api/admin/templates/publish", (req, res) => {
+    const { customTemplates, overrides } = req.body || {};
+    if (Array.isArray(customTemplates)) {
+      dbData.customTemplates = customTemplates;
+    }
+    if (overrides && typeof overrides === 'object') {
+      dbData.templateOverrides = overrides;
+    }
+
+    saveData(dbData);
+    broadcastRealtime("TEMPLATES_UPDATED", {
+      customTemplates: dbData.customTemplates,
+      overrides: dbData.templateOverrides,
+    });
+
+    res.json({
+      success: true,
+      customTemplates: dbData.customTemplates || [],
+      overrides: dbData.templateOverrides || {},
+    });
   });
 
   // Save / Update Custom Uploaded Template (Admin)
@@ -154,7 +181,10 @@ async function startServer() {
     }
 
     saveData(dbData);
-    broadcastRealtime("TEMPLATES_UPDATED", dbData.customTemplates);
+    broadcastRealtime("TEMPLATES_UPDATED", {
+      customTemplates: dbData.customTemplates,
+      overrides: dbData.templateOverrides || {},
+    });
     res.json({ success: true, customTemplates: dbData.customTemplates });
   });
 
@@ -163,8 +193,14 @@ async function startServer() {
     const templateId = req.params.id;
     if (dbData.customTemplates) {
       dbData.customTemplates = dbData.customTemplates.filter((t) => t.id !== templateId);
+      if (dbData.templateOverrides && dbData.templateOverrides[templateId]) {
+        delete dbData.templateOverrides[templateId];
+      }
       saveData(dbData);
-      broadcastRealtime("TEMPLATES_UPDATED", dbData.customTemplates);
+      broadcastRealtime("TEMPLATES_UPDATED", {
+        customTemplates: dbData.customTemplates,
+        overrides: dbData.templateOverrides || {},
+      });
     }
     res.json({ success: true, customTemplates: dbData.customTemplates || [] });
   });

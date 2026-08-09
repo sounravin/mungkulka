@@ -71,6 +71,7 @@ export interface WeddingInvitationData {
   musicTrack: string; // preset key or URL
   coverPhotoUrl: string;
   couplePhotoUrl: string;
+  locationPhotoUrl?: string;
   galleryPhotos: string[];
   
   // Features
@@ -107,6 +108,7 @@ export interface TemplateTheme {
   customFont?: string;
   uploadedAt?: string;
   zipFileName?: string;
+  hidden?: boolean;
 }
 
 export type PackageTier = '15' | '35';

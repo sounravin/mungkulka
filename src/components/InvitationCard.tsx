@@ -187,16 +187,31 @@ const getStage1ButtonClass = (templateId: string) => {
   }
 };
 
-const getSlideAnimClass = (_templateId: string) => {
-  return 'animate-photo-scroll';
+const getSlideAnimClass = (templateId: string) => {
+  switch (templateId) {
+    case 'chateau-blue':
+      return 'animate-photo-3d-tilt';
+    default:
+      return 'animate-photo-3d-tilt';
+  }
 };
 
-const getSlideFrameStyle = (_templateId: string) => {
-  return 'rounded-3xl border border-amber-400/40 bg-black/40 backdrop-blur-sm shadow-2xl';
+const getSlideFrameStyle = (templateId: string) => {
+  switch (templateId) {
+    case 'chateau-blue':
+      return 'rounded-3xl border-2 border-amber-300/90 bg-gradient-to-b from-[#1E3A8A]/40 via-black/60 to-black/90 backdrop-blur-md shadow-[0_25px_60px_rgba(30,58,138,0.7)]';
+    default:
+      return 'rounded-3xl border-2 border-amber-400/60 bg-black/50 backdrop-blur-md shadow-[0_25px_50px_rgba(0,0,0,0.8)]';
+  }
 };
 
-const getSlideGlowBg = (_templateId: string) => {
-  return 'bg-gradient-to-r from-amber-500/40 via-pink-500/30 to-amber-500/40';
+const getSlideGlowBg = (templateId: string) => {
+  switch (templateId) {
+    case 'chateau-blue':
+      return 'bg-gradient-to-r from-[#1E3A8A]/80 via-[#3B82F6]/50 to-[#1E3A8A]/80';
+    default:
+      return 'bg-gradient-to-r from-amber-500/50 via-rose-500/40 to-amber-500/50';
+  }
 };
 
 const getActionButtonClass = (templateId: string) => {
@@ -545,56 +560,120 @@ export const InvitationCard: React.FC<InvitationCardProps> = ({
         
         {/* ================= STAGE 0: WAX SEAL ENVELOPE (Image 1) ================= */}
         {stage === 0 && (
-          <div className="relative w-full min-h-full flex-1 bg-[repeating-linear-gradient(45deg,#F5EFE6_0px,#F5EFE6_3px,#EFE8DC_3px,#EFE8DC_6px)] flex flex-col items-center justify-between p-6 text-center animate-fadeIn overflow-hidden">
-            {/* Top Vintage Music Player */}
-            <div className="absolute top-4 right-4 z-40">
-              <VintageVinylPlayer
-                isPlaying={isPlaying}
-                onToggle={toggleMusic}
-                lang={lang}
-                variant="compact"
-              />
-            </div>
-
-            <div className="my-auto w-full flex flex-col items-center justify-center space-y-6">
-              {/* Guest Name Badge (if personalized link) */}
-              {guestRecipientName && (
-                <div className="px-4 py-2 rounded-2xl bg-amber-100/90 border border-amber-300 text-amber-900 text-xs font-bold shadow-sm animate-bounce">
-                  <span>{lang === 'km' ? 'គោរពអញ្ជើញ៖ ' : 'Respectfully Invited: '}</span>
-                  <span className="text-[#B8860B] font-extrabold">{guestRecipientName}</span>
-                </div>
-              )}
-
-              {/* Envelope Frame */}
-              <div
-                onClick={handleOpenEnvelope}
-                className="relative w-full max-w-[320px] h-[220px] bg-[#F7F2E8] rounded-2xl border border-[#DCD0B7] shadow-xl flex items-center justify-center cursor-pointer group hover:scale-[1.02] transition-transform duration-300"
-              >
-                {/* Envelope Flap Lines */}
-                <div className="absolute inset-0 pointer-events-none">
-                  <svg className="w-full h-full" viewBox="0 0 320 220" fill="none">
-                    <path d="M 0 0 L 160 110 L 320 0" stroke="#DCD0B7" strokeWidth="1.5" />
-                    <path d="M 0 220 L 160 110 L 320 220" stroke="#E2D7BE" strokeWidth="1" />
-                  </svg>
-                </div>
-
-                {/* 3D Gold Wax Seal Stamp in Center */}
-                <div className="relative z-10 w-20 h-20 rounded-full bg-gradient-to-tr from-[#8C6D3B] via-[#E6C687] to-[#B8860B] p-1 shadow-2xl flex items-center justify-center group-hover:rotate-6 transition-transform">
-                  <div className="w-full h-full rounded-full bg-gradient-to-br from-[#D4AF37] via-[#C59B27] to-[#8C6D3B] border-2 border-[#FFE8A3]/60 flex items-center justify-center shadow-inner">
-                    {/* Palm Branch / Leaf Embossed Design */}
-                    <svg className="w-10 h-10 text-[#5C4520] fill-current opacity-80" viewBox="0 0 24 24">
-                      <path d="M12 2C12 2 10.5 7 7 10C3.5 13 2 17 2 17C2 17 6 16.5 9 14C12 11.5 12 8 12 8C12 8 12 11.5 15 14C18 16.5 22 17 22 17C22 17 20.5 13 17 10C13.5 7 12 2 12 2Z" />
-                      <path d="M12 8V22" stroke="#5C4520" strokeWidth="1.5" strokeLinecap="round" />
-                    </svg>
-                  </div>
-                </div>
+          currentTemplate.id === 'chateau-blue' ? (
+            /* Château Porcelain Blue Royal European Envelope Frame */
+            <div className="relative w-full min-h-full flex-1 bg-gradient-to-b from-[#0B1E38] via-[#102B4E] to-[#071324] flex flex-col items-center justify-between p-6 text-center animate-fadeIn overflow-hidden">
+              {/* Floating Snowflakes / Golden Stars Watermark Overlay */}
+              <div className="absolute inset-0 pointer-events-none overflow-hidden z-0 opacity-40">
+                <div className="absolute top-12 left-8 text-amber-200 text-sm animate-pulse">✨</div>
+                <div className="absolute top-1/4 right-10 text-sky-200 text-xs animate-bounce">❄️</div>
+                <div className="absolute bottom-1/3 left-10 text-amber-300 text-xs animate-ping">⚜️</div>
+                <div className="absolute bottom-20 right-12 text-blue-200 text-base animate-pulse">✨</div>
               </div>
 
-              <p className="text-xs font-semibold text-[#8C6D3B] tracking-wide animate-pulse">
-                {lang === 'km' ? 'ប៉ះលើត្រា ឬស្រោមសំបុត្រដើម្បីបើកធៀប' : 'Tap wax seal or envelope to open'}
-              </p>
+              {/* Top Vintage Music Player */}
+              <div className="absolute top-4 right-4 z-40">
+                <VintageVinylPlayer
+                  isPlaying={isPlaying}
+                  onToggle={toggleMusic}
+                  lang={lang}
+                  variant="dark"
+                />
+              </div>
+
+              <div className="my-auto w-full flex flex-col items-center justify-center space-y-6 relative z-10">
+                {/* Guest Name Badge (if personalized link) */}
+                {guestRecipientName && (
+                  <div className="px-4 py-2 rounded-2xl bg-gradient-to-r from-[#1E3A8A] to-[#2563EB] border border-amber-300/80 text-amber-200 text-xs font-bold shadow-lg animate-bounce">
+                    <span>{lang === 'km' ? 'គោរពអញ្ជើញ៖ ' : 'Respectfully Invited: '}</span>
+                    <span className="text-white font-extrabold">{guestRecipientName}</span>
+                  </div>
+                )}
+
+                {/* Porcelain Blue Royal Envelope Frame */}
+                <div
+                  onClick={handleOpenEnvelope}
+                  className="relative w-full max-w-[320px] h-[220px] bg-gradient-to-br from-[#FFFFFF] via-[#F0F6FF] to-[#E2EDFF] rounded-2xl border-2 border-amber-300/90 shadow-[0_20px_50px_rgba(30,58,138,0.5)] flex items-center justify-center cursor-pointer group hover:scale-[1.03] transition-all duration-300 overflow-hidden"
+                >
+                  {/* Porcelain Floral Inner Corner Filigree */}
+                  <div className="absolute inset-2 border border-amber-300/40 rounded-xl pointer-events-none" />
+
+                  {/* Envelope Flap Lines */}
+                  <div className="absolute inset-0 pointer-events-none">
+                    <svg className="w-full h-full" viewBox="0 0 320 220" fill="none">
+                      <path d="M 0 0 L 160 110 L 320 0" stroke="#1E3A8A" strokeWidth="2" strokeDasharray="6 3" />
+                      <path d="M 0 0 L 160 110 L 320 0" stroke="#D4AF37" strokeWidth="1" />
+                      <path d="M 0 220 L 160 110 L 320 220" stroke="#3B82F6" strokeWidth="1.5" opacity="0.6" />
+                    </svg>
+                  </div>
+
+                  {/* 3D Royal Porcelain Wax Seal Stamp in Center */}
+                  <div className="relative z-10 w-20 h-20 rounded-full bg-gradient-to-tr from-[#0F172A] via-[#1E3A8A] to-[#2563EB] p-1 shadow-2xl flex items-center justify-center group-hover:rotate-12 transition-transform duration-500 border border-amber-300/80">
+                    <div className="w-full h-full rounded-full bg-gradient-to-br from-[#1E3A8A] via-[#172554] to-[#0F172A] border-2 border-amber-300/90 flex flex-col items-center justify-center shadow-inner text-amber-300">
+                      <span className="text-xl filter drop-shadow">⚜️</span>
+                      <span className="text-[10px] font-moul tracking-widest text-amber-200 mt-0.5">ម.ក</span>
+                    </div>
+                  </div>
+                </div>
+
+                <p className="text-xs font-semibold text-amber-200 tracking-wider animate-pulse filter drop-shadow">
+                  {lang === 'km' ? 'ប៉ះលើត្រា ឬស្រោមសំបុត្ររាជវាំងដើម្បីបើកធៀប' : 'Tap Royal Seal or Envelope to Open'}
+                </p>
+              </div>
             </div>
-          </div>
+          ) : (
+            /* Default Wax Seal Envelope */
+            <div className="relative w-full min-h-full flex-1 bg-[repeating-linear-gradient(45deg,#F5EFE6_0px,#F5EFE6_3px,#EFE8DC_3px,#EFE8DC_6px)] flex flex-col items-center justify-between p-6 text-center animate-fadeIn overflow-hidden">
+              {/* Top Vintage Music Player */}
+              <div className="absolute top-4 right-4 z-40">
+                <VintageVinylPlayer
+                  isPlaying={isPlaying}
+                  onToggle={toggleMusic}
+                  lang={lang}
+                  variant="compact"
+                />
+              </div>
+
+              <div className="my-auto w-full flex flex-col items-center justify-center space-y-6">
+                {/* Guest Name Badge (if personalized link) */}
+                {guestRecipientName && (
+                  <div className="px-4 py-2 rounded-2xl bg-amber-100/90 border border-amber-300 text-amber-900 text-xs font-bold shadow-sm animate-bounce">
+                    <span>{lang === 'km' ? 'គោរពអញ្ជើញ៖ ' : 'Respectfully Invited: '}</span>
+                    <span className="text-[#B8860B] font-extrabold">{guestRecipientName}</span>
+                  </div>
+                )}
+
+                {/* Envelope Frame */}
+                <div
+                  onClick={handleOpenEnvelope}
+                  className="relative w-full max-w-[320px] h-[220px] bg-[#F7F2E8] rounded-2xl border border-[#DCD0B7] shadow-xl flex items-center justify-center cursor-pointer group hover:scale-[1.02] transition-transform duration-300"
+                >
+                  {/* Envelope Flap Lines */}
+                  <div className="absolute inset-0 pointer-events-none">
+                    <svg className="w-full h-full" viewBox="0 0 320 220" fill="none">
+                      <path d="M 0 0 L 160 110 L 320 0" stroke="#DCD0B7" strokeWidth="1.5" />
+                      <path d="M 0 220 L 160 110 L 320 220" stroke="#E2D7BE" strokeWidth="1" />
+                    </svg>
+                  </div>
+
+                  {/* 3D Gold Wax Seal Stamp in Center */}
+                  <div className="relative z-10 w-20 h-20 rounded-full bg-gradient-to-tr from-[#8C6D3B] via-[#E6C687] to-[#B8860B] p-1 shadow-2xl flex items-center justify-center group-hover:rotate-6 transition-transform">
+                    <div className="w-full h-full rounded-full bg-gradient-to-br from-[#D4AF37] via-[#C59B27] to-[#8C6D3B] border-2 border-[#FFE8A3]/60 flex items-center justify-center shadow-inner">
+                      {/* Palm Branch / Leaf Embossed Design */}
+                      <svg className="w-10 h-10 text-[#5C4520] fill-current opacity-80" viewBox="0 0 24 24">
+                        <path d="M12 2C12 2 10.5 7 7 10C3.5 13 2 17 2 17C2 17 6 16.5 9 14C12 11.5 12 8 12 8C12 8 12 11.5 15 14C18 16.5 22 17 22 17C22 17 20.5 13 17 10C13.5 7 12 2 12 2Z" />
+                        <path d="M12 8V22" stroke="#5C4520" strokeWidth="1.5" strokeLinecap="round" />
+                      </svg>
+                    </div>
+                  </div>
+                </div>
+
+                <p className="text-xs font-semibold text-[#8C6D3B] tracking-wide animate-pulse">
+                  {lang === 'km' ? 'ប៉ះលើត្រា ឬស្រោមសំបុត្រដើម្បីបើកធៀប' : 'Tap wax seal or envelope to open'}
+                </p>
+              </div>
+            </div>
+          )
         )}
 
         {/* ================= STAGE 1: CARD COVER ARCH GATE (Image 2) ================= */}
@@ -843,25 +922,64 @@ export const InvitationCard: React.FC<InvitationCardProps> = ({
               isTransitioningBlur ? 'blur-2xl opacity-0 scale-105' : 'blur-0 opacity-100 scale-100'
             }`}
           >
-            {/* Keyframe animation for smooth left-right backwards-forwards photo scroll */}
+            {/* Custom Keyframe Animations for Cinematic Slideshow & Floating Depth Cards */}
             <style>{`
-              @keyframes photoScrollLeftRight {
-                0% { transform: translateX(0px) scale(1); }
-                30% { transform: translateX(-18px) scale(1.02); }
-                70% { transform: translateX(18px) scale(1.02); }
-                100% { transform: translateX(0px) scale(1); }
+              @keyframes kenburnsBgMotion {
+                0% { transform: scale(1.1) translate(0%, 0%) rotate(0deg); }
+                25% { transform: scale(1.22) translate(-2.5%, 1.5%) rotate(0.4deg); }
+                50% { transform: scale(1.28) translate(2.5%, -1.5%) rotate(-0.4deg); }
+                75% { transform: scale(1.18) translate(-1.5%, -2.5%) rotate(0.6deg); }
+                100% { transform: scale(1.1) translate(0%, 0%) rotate(0deg); }
               }
-              .animate-photo-scroll {
-                animation: photoScrollLeftRight 3s ease-in-out infinite;
+              .animate-kenburns-bg {
+                animation: kenburnsBgMotion 20s ease-in-out infinite alternate;
+              }
+
+              @keyframes photo3dTiltWave {
+                0% { transform: perspective(1000px) rotateY(-5deg) rotateX(2deg) scale(0.99); }
+                33% { transform: perspective(1000px) rotateY(0deg) rotateX(-3deg) scale(1.02); }
+                66% { transform: perspective(1000px) rotateY(5deg) rotateX(2deg) scale(1.00); }
+                100% { transform: perspective(1000px) rotateY(-5deg) rotateX(2deg) scale(0.99); }
+              }
+              .animate-photo-3d-tilt {
+                animation: photo3dTiltWave 6s ease-in-out infinite;
+              }
+
+              @keyframes floatCardTopRight {
+                0% { transform: translate(0px, 0px) rotate(-12deg) scale(0.85); }
+                50% { transform: translate(10px, -14px) rotate(-8deg) scale(0.88); }
+                100% { transform: translate(0px, 0px) rotate(-12deg) scale(0.85); }
+              }
+              .animate-float-topright {
+                animation: floatCardTopRight 7s ease-in-out infinite;
+              }
+
+              @keyframes floatCardBottomLeft {
+                0% { transform: translate(0px, 0px) rotate(14deg) scale(0.82); }
+                50% { transform: translate(-12px, 12px) rotate(18deg) scale(0.86); }
+                100% { transform: translate(0px, 0px) rotate(14deg) scale(0.82); }
+              }
+              .animate-float-bottomleft {
+                animation: floatCardBottomLeft 8s ease-in-out infinite;
+              }
+
+              @keyframes floatCardTopLeft {
+                0% { transform: translate(0px, 0px) rotate(8deg) scale(0.75); }
+                50% { transform: translate(-8px, -10px) rotate(4deg) scale(0.78); }
+                100% { transform: translate(0px, 0px) rotate(8deg) scale(0.75); }
+              }
+              .animate-float-topleft {
+                animation: floatCardTopLeft 9s ease-in-out infinite;
               }
             `}</style>
 
-            {/* Background Blur of the photo itself */}
+            {/* Background Ken Burns Pan-Zoom Motion Layer (Matching Active Photo Color & Tone) */}
             <div
-              className="absolute inset-0 bg-cover bg-center filter blur-3xl scale-125 opacity-60 transition-all duration-700"
+              className="absolute inset-0 bg-cover bg-center filter blur-xl opacity-70 animate-kenburns-bg transition-all duration-1000"
               style={{ backgroundImage: `url(${galleryPhotosList[activePhotoIdx]})` }}
             />
-            <div className="absolute inset-0 bg-black/40 backdrop-blur-md" />
+            {/* Dark Vignette Overlay for Depth */}
+            <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-stone-950/50 to-black/85 backdrop-blur-sm" />
 
             {/* Split Curtains / Royal Gates Animation */}
             {currentTemplate.id === 'chateau-blue' ? (
@@ -930,9 +1048,9 @@ export const InvitationCard: React.FC<InvitationCardProps> = ({
               </div>
             )}
 
-            {/* Stage Top Curtain Header */}
+            {/* Stage Top Header */}
             <div className="relative z-40 w-full pt-2 flex items-center justify-between text-white text-xs">
-              <div className="px-3 py-1 rounded-full bg-black/50 backdrop-blur-md border border-amber-500/40 text-[11px] text-amber-200 font-bold flex items-center gap-1.5 shadow-lg">
+              <div className="px-3 py-1 rounded-full bg-black/60 backdrop-blur-md border border-amber-400/50 text-[11px] text-amber-200 font-bold flex items-center gap-1.5 shadow-lg">
                 <Sparkles className="w-3.5 h-3.5 text-amber-400" />
                 <span>
                   {lang === 'km'
@@ -950,33 +1068,131 @@ export const InvitationCard: React.FC<InvitationCardProps> = ({
               />
             </div>
 
-            {/* Central Animated Photo Card Container */}
-            <div className="relative z-20 flex-1 w-full my-auto flex flex-col items-center justify-center p-2">
-              <div className={`relative w-full max-w-[340px] group transition-all duration-700 ${getSlideAnimClass(currentTemplate.id)}`}>
+            {/* ================= DYNAMIC MULTI-LAYERED FLOATING PHOTO SLIDESHOW ================= */}
+            <div className="relative z-20 flex-1 w-full my-auto flex items-center justify-center p-2 overflow-hidden">
+              
+              {/* 1. FLOATING BACKGROUND PHOTO CARD (Top Right - Matches Reference Image) */}
+              {galleryPhotosList.length > 1 && (
+                <div className="absolute -top-4 -right-8 sm:right-2 w-[160px] sm:w-[200px] h-[200px] sm:h-[250px] bg-[#FAF8F5] p-2 rounded-xl shadow-[0_20px_40px_rgba(0,0,0,0.6)] border border-amber-200/60 pointer-events-none opacity-80 animate-float-topright z-0 overflow-hidden">
+                  <div className="w-full h-[150px] sm:h-[190px] overflow-hidden rounded-lg bg-stone-900">
+                    <img
+                      src={galleryPhotosList[(activePhotoIdx + 1) % galleryPhotosList.length]}
+                      alt="Top Right Floating Card"
+                      className="w-full h-full object-cover filter brightness-90"
+                    />
+                  </div>
+                  <div className="mt-1 flex items-center justify-between text-[8px] font-mono text-stone-500 px-1">
+                    <span>✦ PHOTO FRAME</span>
+                    <span>02/05</span>
+                  </div>
+                </div>
+              )}
+
+              {/* 2. FLOATING BACKGROUND PHOTO CARD (Bottom Left - Matches Reference Image) */}
+              {galleryPhotosList.length > 2 && (
+                <div className="absolute -bottom-6 -left-8 sm:left-2 w-[150px] sm:w-[190px] h-[190px] sm:h-[240px] bg-[#FAF8F5] p-2 rounded-xl shadow-[0_20px_40px_rgba(0,0,0,0.6)] border border-amber-200/60 pointer-events-none opacity-75 animate-float-bottomleft z-0 overflow-hidden">
+                  <div className="w-full h-[140px] sm:h-[180px] overflow-hidden rounded-lg bg-stone-900">
+                    <img
+                      src={galleryPhotosList[(activePhotoIdx + 2) % galleryPhotosList.length]}
+                      alt="Bottom Left Floating Card"
+                      className="w-full h-full object-cover filter brightness-90"
+                    />
+                  </div>
+                  <div className="mt-1 flex items-center justify-between text-[8px] font-mono text-stone-500 px-1">
+                    <span>✦ MEMORIES</span>
+                    <span>03/05</span>
+                  </div>
+                </div>
+              )}
+
+              {/* 3. FLOATING BACKGROUND PHOTO CARD (Top Left - Depth Layer) */}
+              {galleryPhotosList.length > 3 && (
+                <div className="absolute top-2 -left-12 w-[130px] h-[160px] bg-white/90 p-1.5 rounded-lg shadow-xl border border-amber-200/40 pointer-events-none opacity-50 animate-float-topleft z-0 overflow-hidden hidden sm:block">
+                  <div className="w-full h-[120px] overflow-hidden rounded bg-stone-900">
+                    <img
+                      src={galleryPhotosList[(activePhotoIdx + galleryPhotosList.length - 1) % galleryPhotosList.length]}
+                      alt="Top Left Depth Card"
+                      className="w-full h-full object-cover filter brightness-75"
+                    />
+                  </div>
+                </div>
+              )}
+
+              {/* Left Navigation Arrow Button */}
+              {galleryPhotosList.length > 1 && (
+                <button
+                  type="button"
+                  onClick={() => setActivePhotoIdx((prev) => (prev - 1 + galleryPhotosList.length) % galleryPhotosList.length)}
+                  className="absolute left-1 sm:left-4 z-40 w-10 h-10 rounded-full bg-black/60 hover:bg-black/90 text-amber-300 border border-amber-400/60 backdrop-blur-md flex items-center justify-center shadow-2xl active:scale-90 transition-all cursor-pointer"
+                  title="Previous Photo"
+                >
+                  <ChevronLeft className="w-6 h-6" />
+                </button>
+              )}
+
+              {/* MAIN CENTRAL STUDIO PHOTO FRAME (Direct Match to User's Uploaded Reference Photo) */}
+              <div className={`relative z-20 w-full max-w-[320px] sm:max-w-[360px] group transition-all duration-700 ${getSlideAnimClass(currentTemplate.id)}`}>
                 
                 {/* Glow Backdrop */}
-                <div className={`absolute -inset-3 blur-2xl opacity-80 animate-pulse rounded-3xl ${getSlideGlowBg(currentTemplate.id)}`} />
+                <div className={`absolute -inset-3 blur-2xl opacity-85 animate-pulse rounded-3xl ${getSlideGlowBg(currentTemplate.id)}`} />
 
-                {/* Photo Container Frame */}
-                <div className={`relative w-full h-[380px] sm:h-[420px] overflow-hidden ${getSlideFrameStyle(currentTemplate.id)}`}>
-                  <img
-                    src={galleryPhotosList[activePhotoIdx] || 'https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&w=800&q=80'}
-                    alt="Couple Photo"
-                    className="w-full h-full object-cover transition-transform duration-700 hover:scale-105"
-                    referrerPolicy="no-referrer"
-                  />
+                {/* Studio White/Cream Paper Frame Container */}
+                <div className="relative w-full bg-[#FAF8F5] p-3 sm:p-4 rounded-2xl sm:rounded-3xl border-2 border-amber-300/80 shadow-[0_30px_70px_rgba(0,0,0,0.8)] overflow-hidden">
                   
-                  {/* Dark gradient bottom caption overlay */}
-                  <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent p-4 pt-10 text-white text-center space-y-1">
-                    <h3 className="font-moul text-base tracking-wide text-amber-200 drop-shadow-md">
-                      {lang === 'km' ? `${data.groomNameKm} & ${data.brideNameKm}` : `${data.groomNameEn} & ${data.brideNameEn}`}
-                    </h3>
-                    <p className="text-xs text-stone-200 font-semibold drop-shadow">
-                      {lang === 'km' ? data.lunarDateKm : data.weddingDateIso}
-                    </p>
+                  {/* Top Bar Stamp Metadata (Same as reference image "✦ PHOTO FRAME - 01/05") */}
+                  <div className="w-full pb-2 flex items-center justify-between text-[9px] sm:text-[10px] font-mono tracking-wider text-stone-600 border-b border-stone-200/80 mb-2">
+                    <span className="flex items-center gap-1 font-semibold text-amber-900">
+                      <span className="text-amber-600">✦</span> PHOTO FRAME - 0{activePhotoIdx + 1}
+                    </span>
+                    <span className="font-bold text-amber-800">
+                      0{activePhotoIdx + 1} / 0{galleryPhotosList.length}
+                    </span>
+                  </div>
+
+                  {/* Main Image Holder */}
+                  <div className="relative w-full h-[320px] sm:h-[370px] overflow-hidden rounded-xl bg-stone-900 shadow-inner">
+                    <img
+                      key={activePhotoIdx}
+                      src={galleryPhotosList[activePhotoIdx] || 'https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&w=800&q=80'}
+                      alt="Couple Photo"
+                      className="w-full h-full object-cover transition-all duration-700 hover:scale-105 animate-fadeIn"
+                      referrerPolicy="no-referrer"
+                    />
+                    
+                    {/* Subtle Dark Bottom Gradient Text Frame Overlay */}
+                    <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/85 via-black/40 to-transparent p-3 pt-8 text-white text-center space-y-0.5">
+                      <h3 className="font-moul text-sm sm:text-base tracking-wide text-amber-200 filter drop-shadow">
+                        {lang === 'km' ? `${data.groomNameKm} & ${data.brideNameKm}` : `${data.groomNameEn} & ${data.brideNameEn}`}
+                      </h3>
+                      <p className="text-[11px] text-stone-200 font-semibold filter drop-shadow">
+                        {lang === 'km' ? data.lunarDateKm : data.weddingDateIso}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Bottom Bar Details (Same as reference image "MEMORIES | មង្គលការ") */}
+                  <div className="w-full pt-2 mt-1 flex items-center justify-between text-[9px] sm:text-[10px] font-mono text-stone-600 border-t border-stone-200/80">
+                    <span className="text-stone-500 font-serif font-bold">
+                      {data.weddingDateIso || 'WEDDING DAY'}
+                    </span>
+                    <span className="font-moul text-amber-900 tracking-wider">
+                      MEMORIES | {lang === 'km' ? 'មង្គលការ' : 'WEDDING'}
+                    </span>
                   </div>
                 </div>
               </div>
+
+              {/* Right Navigation Arrow Button */}
+              {galleryPhotosList.length > 1 && (
+                <button
+                  type="button"
+                  onClick={() => setActivePhotoIdx((prev) => (prev + 1) % galleryPhotosList.length)}
+                  className="absolute right-1 sm:right-4 z-40 w-10 h-10 rounded-full bg-black/60 hover:bg-black/90 text-amber-300 border border-amber-400/60 backdrop-blur-md flex items-center justify-center shadow-2xl active:scale-90 transition-all cursor-pointer"
+                  title="Next Photo"
+                >
+                  <ChevronRight className="w-6 h-6" />
+                </button>
+              )}
             </div>
 
             {/* Bottom Photo Dots Indicator & Skip Button */}

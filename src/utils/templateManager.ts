@@ -2,6 +2,26 @@ import { TEMPLATES } from '../data/templates';
 import { TemplateTheme } from '../types';
 
 let inMemoryCustomTemplates: TemplateTheme[] = [];
+let inMemoryTemplateOverrides: Record<string, Partial<TemplateTheme>> = {};
+
+// Load saved overrides from localStorage
+try {
+  const savedOverrides = localStorage.getItem('mongkulkar_template_overrides');
+  if (savedOverrides) {
+    inMemoryTemplateOverrides = JSON.parse(savedOverrides);
+  }
+} catch (e) {}
+
+// Helper to apply overrides
+const applyOverrides = (templates: TemplateTheme[]): TemplateTheme[] => {
+  return templates.map((tmpl) => {
+    const override = inMemoryTemplateOverrides[tmpl.id];
+    if (override) {
+      return { ...tmpl, ...override };
+    }
+    return tmpl;
+  });
+};
 
 // IndexedDB Helper for high-capacity local storage (prevents 5MB localStorage QuotaExceeded error)
 const DB_NAME = 'mongkulkar_db';
@@ -73,9 +93,15 @@ export const clearCustomTemplatesLocalDB = async (): Promise<void> => {
   }
 };
 
-// Helper to get all templates (built-in + custom)
+// Helper to get all templates (built-in + custom) with overrides
 export const getAllTemplates = (): TemplateTheme[] => {
-  return [...TEMPLATES, ...inMemoryCustomTemplates];
+  const all = [...TEMPLATES, ...inMemoryCustomTemplates];
+  return applyOverrides(all);
+};
+
+// Helper to get only visible templates for member users
+export const getVisibleTemplates = (): TemplateTheme[] => {
+  return getAllTemplates().filter((tmpl) => !tmpl.hidden);
 };
 
 // Helper to get custom templates only
@@ -83,56 +109,90 @@ export const getCustomTemplates = (): TemplateTheme[] => {
   return inMemoryCustomTemplates;
 };
 
-// Fetch custom templates from backend server
+// Toggle visibility of any template (Admin)
+export const toggleTemplateVisibility = (id: string, forceHidden?: boolean): void => {
+  const current = getAllTemplates().find((t) => t.id === id);
+  const nextHidden = forceHidden !== undefined ? forceHidden : !current?.hidden;
+
+  inMemoryTemplateOverrides[id] = {
+    ...(inMemoryTemplateOverrides[id] || {}),
+    hidden: nextHidden,
+  };
+
+  try {
+    localStorage.setItem('mongkulkar_template_overrides', JSON.stringify(inMemoryTemplateOverrides));
+  } catch (e) {}
+
+  window.dispatchEvent(new CustomEvent('templates-updated'));
+};
+
+// Update details/overrides of any template (Admin)
+export const updateTemplateOverride = (id: string, updates: Partial<TemplateTheme>): void => {
+  inMemoryTemplateOverrides[id] = {
+    ...(inMemoryTemplateOverrides[id] || {}),
+    ...updates,
+  };
+
+  try {
+    localStorage.setItem('mongkulkar_template_overrides', JSON.stringify(inMemoryTemplateOverrides));
+  } catch (e) {}
+
+  window.dispatchEvent(new CustomEvent('templates-updated'));
+};
+
+// Publish & sync current template settings to members
+export const publishTemplatesToMembers = async (): Promise<boolean> => {
+  try {
+    const payload = {
+      customTemplates: inMemoryCustomTemplates,
+      overrides: inMemoryTemplateOverrides,
+    };
+
+    const res = await fetch('/api/admin/templates/publish', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+
+    if (res.ok) {
+      window.dispatchEvent(new CustomEvent('templates-updated'));
+      return true;
+    }
+  } catch (err) {
+    console.warn('Could not publish templates to server:', err);
+  }
+
+  window.dispatchEvent(new CustomEvent('templates-updated'));
+  return true;
+};
+
+// Fetch custom templates & overrides from backend server
 export const fetchCustomTemplates = async (): Promise<TemplateTheme[]> => {
   try {
     const res = await fetch('/api/templates');
     if (res.ok) {
       const data = await res.json();
-      if (Array.isArray(data)) {
-        inMemoryCustomTemplates = data;
-        if (data.length > 0) {
-          for (const tmpl of data) {
-            await saveCustomTemplateLocalDB(tmpl);
-          }
-          try {
-            localStorage.setItem('mongkulkar_custom_templates', JSON.stringify(data));
-          } catch (e) {}
-        } else {
-          // Clear local cache if server has no custom templates
-          await clearCustomTemplatesLocalDB();
-          try {
-            localStorage.removeItem('mongkulkar_custom_templates');
-          } catch (e) {}
-        }
+      const customTmpls = data.customTemplates || (Array.isArray(data) ? data : []);
+      const overrides = data.overrides || {};
+
+      if (Array.isArray(customTmpls)) {
+        inMemoryCustomTemplates = customTmpls;
+        inMemoryTemplateOverrides = overrides;
+
+        try {
+          localStorage.setItem('mongkulkar_custom_templates', JSON.stringify(customTmpls));
+          localStorage.setItem('mongkulkar_template_overrides', JSON.stringify(overrides));
+        } catch (e) {}
+
         window.dispatchEvent(new CustomEvent('templates-updated'));
-        return data;
+        return getAllTemplates();
       }
     }
   } catch (err) {
     console.warn('Could not fetch custom templates from server, fallback to local storage:', err);
   }
 
-  // Fallback to IndexedDB first
-  try {
-    const localDbTemplates = await getCustomTemplatesLocalDB();
-    if (localDbTemplates && localDbTemplates.length > 0) {
-      inMemoryCustomTemplates = localDbTemplates;
-      return inMemoryCustomTemplates;
-    }
-  } catch (e) {}
-
-  // Fallback to local storage
-  try {
-    const saved = localStorage.getItem('mongkulkar_custom_templates');
-    if (saved) {
-      inMemoryCustomTemplates = JSON.parse(saved);
-    } else {
-      inMemoryCustomTemplates = [];
-    }
-  } catch (e) {}
-
-  return inMemoryCustomTemplates;
+  return getAllTemplates();
 };
 
 // Save new or updated custom template to server & state

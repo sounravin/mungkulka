@@ -1025,6 +1025,24 @@ export const InvitationBuilder: React.FC<InvitationBuilderProps> = ({
                     className="w-full px-3 py-2 rounded-xl border border-stone-300"
                   />
                 </div>
+
+                <div className="sm:col-span-2 space-y-2 pt-2 border-t border-stone-200">
+                  <label className="block font-bold text-stone-700">
+                    {lang === 'km' ? 'រូបថតទីតាំង / អាគារប្រារព្ធពិធី (Venue Photo URL)' : 'Venue / Hall Photo URL'}
+                  </label>
+                  <input
+                    type="text"
+                    value={data.locationPhotoUrl || ''}
+                    onChange={(e) => updateField('locationPhotoUrl', e.target.value)}
+                    placeholder="https://..."
+                    className="w-full px-3 py-2 rounded-xl border border-stone-300 text-xs focus:ring-2 focus:ring-[#B8860B] focus:outline-none"
+                  />
+                  <p className="text-[11px] text-stone-500">
+                    {lang === 'km'
+                      ? 'រូបថតនេះនឹងបង្ហាញនៅលើផ្នែក "ទីតាំងប្រារព្ធពិធី" នៃធៀបការ (ប្រសិនបើទុកទំនេរ វានឹងយករូបថតដែលបាន upload ក្នុង Album មកបង្ហាញ)'
+                      : 'This photo will display on the "Reception Venue" section of the invitation card.'}
+                  </p>
+                </div>
               </div>
             </div>
           )}

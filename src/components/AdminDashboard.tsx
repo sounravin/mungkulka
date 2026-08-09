@@ -19,17 +19,33 @@ import {
   Wand2,
   FileText,
   Eye,
+  EyeOff,
+  Palette,
+  Edit3,
+  Send,
   X,
   QrCode,
   Upload,
   Save,
   Trash2,
 } from 'lucide-react';
-import { PackageOrder, PackageTier, UnlockedPackage, MemberAccount } from '../types';
+import { PackageOrder, PackageTier, UnlockedPackage, MemberAccount, TemplateTheme } from '../types';
 import { addMemberNotification, activateMemberPackage, getMembers } from '../utils/memberStorage';
 import { subscribeRealtime, notifyRealtimeEvent } from '../utils/realtime';
 import { getSystemConfig, saveSystemConfig, SystemConfig } from '../utils/systemConfig';
 import { compressImage } from '../utils/imageCompressor';
+import {
+  getAllTemplates,
+  fetchCustomTemplates,
+  toggleTemplateVisibility,
+  updateTemplateOverride,
+  publishTemplatesToMembers,
+  processZipTemplate,
+  saveCustomTemplate,
+  deleteCustomTemplate,
+} from '../utils/templateManager';
+import { InvitationCard } from './InvitationCard';
+import { SAMPLE_INVITATIONS } from '../data/presetInvitations';
 
 interface AdminDashboardProps {
   lang: 'km' | 'en';
@@ -47,13 +63,84 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ lang, onExitAdmi
 
   const [orders, setOrders] = useState<PackageOrder[]>([]);
   const [members, setMembers] = useState<MemberAccount[]>([]);
-  const [activeTab, setActiveTab] = useState<'orders' | 'members'>('orders');
+  const [activeTab, setActiveTab] = useState<'orders' | 'members' | 'templates'>('orders');
   const [statusFilter, setStatusFilter] = useState<'all' | 'pending' | 'approved' | 'rejected'>('all');
   const [searchTerm, setSearchTerm] = useState('');
   const [memberSearchTerm, setMemberSearchTerm] = useState('');
   const [memberFilterStatus, setMemberFilterStatus] = useState<'all' | 'activated' | 'free'>('all');
   const [selectedMemberDetail, setSelectedMemberDetail] = useState<MemberAccount | null>(null);
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
+
+  // Template Control Panel State
+  const [allAdminTemplates, setAllAdminTemplates] = useState<TemplateTheme[]>(() => getAllTemplates());
+  const [editingTemplate, setEditingTemplate] = useState<TemplateTheme | null>(null);
+  const [previewingTemplate, setPreviewingTemplate] = useState<TemplateTheme | null>(null);
+  const [templateSearchTerm, setTemplateSearchTerm] = useState('');
+  const [templateFilterStatus, setTemplateFilterStatus] = useState<'all' | 'visible' | 'hidden'>('all');
+  const [isPublishing, setIsPublishing] = useState(false);
+  const [publishSuccessMessage, setPublishSuccessMessage] = useState<string | null>(null);
+  const [isUploadingZip, setIsUploadingZip] = useState(false);
+
+  const refreshAdminTemplates = () => {
+    setAllAdminTemplates(getAllTemplates());
+  };
+
+  const handleToggleHideTemplate = (id: string) => {
+    toggleTemplateVisibility(id);
+    refreshAdminTemplates();
+  };
+
+  const handlePublishTemplates = async () => {
+    setIsPublishing(true);
+    await publishTemplatesToMembers();
+    setIsPublishing(false);
+    setPublishSuccessMessage(
+      lang === 'km'
+        ? '🚀 បានដាក់បញ្ចូល និង Sync បណ្តុំ Template ទៅកាន់ User Member រួចរាល់!'
+        : '🚀 Templates published and synced to user members successfully!'
+    );
+    setTimeout(() => setPublishSuccessMessage(null), 4000);
+  };
+
+  const handleZipFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setIsUploadingZip(true);
+    try {
+      const processed = await processZipTemplate(file);
+      await saveCustomTemplate(processed);
+      refreshAdminTemplates();
+    } catch (err) {
+      console.error('Error uploading zip template:', err);
+    } finally {
+      setIsUploadingZip(false);
+      e.target.value = '';
+    }
+  };
+
+  const handleSaveEditedTemplate = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingTemplate) return;
+    updateTemplateOverride(editingTemplate.id, {
+      nameKm: editingTemplate.nameKm,
+      nameEn: editingTemplate.nameEn,
+      badge: editingTemplate.badge,
+      taglineKm: editingTemplate.taglineKm,
+      taglineEn: editingTemplate.taglineEn,
+    });
+    if (editingTemplate.isCustom) {
+      await saveCustomTemplate(editingTemplate);
+    }
+    setEditingTemplate(null);
+    refreshAdminTemplates();
+  };
+
+  const handleDeleteCustomTemplate = async (id: string) => {
+    if (confirm(lang === 'km' ? 'តើអ្នកប្រាកដថាលុប Template នេះទេ?' : 'Are you sure you want to delete this template?')) {
+      await deleteCustomTemplate(id);
+      refreshAdminTemplates();
+    }
+  };
 
   // Invoice modal state
   const [selectedInvoiceUrl, setSelectedInvoiceUrl] = useState<string | null>(null);
@@ -178,7 +265,17 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ lang, onExitAdmi
     if (isAuthenticated) {
       loadOrders();
       loadMembers();
+      fetchCustomTemplates().then(() => {
+        setAllAdminTemplates(getAllTemplates());
+      });
     }
+
+    const handleTemplatesUpdated = () => {
+      setAllAdminTemplates(getAllTemplates());
+    };
+
+    window.addEventListener('templates-updated', handleTemplatesUpdated);
+    return () => window.removeEventListener('templates-updated', handleTemplatesUpdated);
   }, [isAuthenticated]);
 
   // Subscribe to Realtime events across tabs & components
@@ -671,6 +768,21 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ lang, onExitAdmi
             {members.length}
           </span>
         </button>
+
+        <button
+          onClick={() => setActiveTab('templates')}
+          className={`px-6 py-3 rounded-xl text-xs font-bold transition-all flex items-center gap-2 ${
+            activeTab === 'templates'
+              ? 'bg-white text-stone-900 shadow-md border border-stone-200'
+              : 'text-stone-600 hover:text-stone-900 hover:bg-white/50'
+          }`}
+        >
+          <Palette className="w-4 h-4 text-purple-600" />
+          <span>{lang === 'km' ? '🎨 គ្រប់គ្រងរចនាបថធៀប (Template Control Panel)' : 'Template Control Panel'}</span>
+          <span className="px-2 py-0.5 rounded-full text-[10px] bg-purple-100 text-purple-800 font-extrabold ml-1">
+            {allAdminTemplates.length}
+          </span>
+        </button>
       </div>
 
       {/* Orders Management Table Card */}
@@ -868,6 +980,245 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ lang, onExitAdmi
         </div>
       )}
 
+      {/* Template Control Panel Card */}
+      {activeTab === 'templates' && (
+        <div className="bg-white rounded-3xl border border-amber-200/80 shadow-md p-6 space-y-6 animate-fadeIn">
+          {/* Header & Main Publish Action Bar */}
+          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-stone-200 pb-5">
+            <div>
+              <div className="flex items-center gap-2 text-[#B8860B] font-bold text-xs uppercase tracking-widest mb-1">
+                <Palette className="w-4 h-4" />
+                <span>{lang === 'km' ? 'កន្លែងគ្រប់គ្រង Template ធៀបការ' : 'Template Control Panel'}</span>
+              </div>
+              <h2 className="text-xl font-bold text-stone-900 font-moul">
+                {lang === 'km' ? 'គ្រប់គ្រងបណ្តុំរចនាបថធៀបមង្គលការ' : 'Wedding Invitation Template Manager'}
+              </h2>
+              <p className="text-xs text-stone-500 mt-1">
+                {lang === 'km'
+                  ? 'អ្នកអាចលាក់/បង្ហាញ (Hide/Show) ផ្លាស់ប្តូរព័ត៌មាន បញ្ចូល ZIP Custom ថ្មី និងចុចប៊ូតុង "ដាក់បញ្ចូលទៅកាន់ User Member" ដើម្បីអោយសមាជិកប្រើប្រាស់'
+                  : 'Hide/Show any template, edit details, upload zip themes, and publish to make available for members.'}
+              </p>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="flex flex-wrap items-center gap-3">
+              {/* Upload Zip Button */}
+              <label className="cursor-pointer px-4 py-2.5 rounded-xl bg-stone-100 hover:bg-stone-200 text-stone-800 font-bold text-xs shadow-sm border border-stone-300 transition-all flex items-center gap-2">
+                <Upload className="w-4 h-4 text-purple-600" />
+                <span>{isUploadingZip ? (lang === 'km' ? 'កំពុងដំណើការ...' : 'Uploading...') : (lang === 'km' ? '➕ អាប់ឡូត ZIP Template ថ្មី' : 'Upload ZIP Template')}</span>
+                <input
+                  type="file"
+                  accept=".zip"
+                  onChange={handleZipFileUpload}
+                  className="hidden"
+                  disabled={isUploadingZip}
+                />
+              </label>
+
+              {/* PUBLISH BUTTON */}
+              <button
+                onClick={handlePublishTemplates}
+                disabled={isPublishing}
+                className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-[#B8860B] to-[#966b08] hover:from-[#966b08] hover:to-[#8C6D3B] text-white font-bold text-xs shadow-lg transition-all flex items-center gap-2 border border-amber-300/40 transform active:scale-95 cursor-pointer"
+              >
+                <Send className={`w-4 h-4 text-amber-200 ${isPublishing ? 'animate-spin' : ''}`} />
+                <span>
+                  {isPublishing
+                    ? (lang === 'km' ? 'កំពុង Sync ទៅកាន់សមាជិក...' : 'Syncing...')
+                    : (lang === 'km' ? '🚀 ដាក់បញ្ចូលទៅកាន់ User Member អោយប្រើប្រាស់' : 'Publish / Sync to User Members')}
+                </span>
+              </button>
+            </div>
+          </div>
+
+          {/* Success Banner */}
+          {publishSuccessMessage && (
+            <div className="p-4 rounded-2xl bg-emerald-50 border-2 border-emerald-300 text-emerald-900 font-bold text-xs flex items-center gap-3 animate-fadeIn">
+              <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0" />
+              <span>{publishSuccessMessage}</span>
+            </div>
+          )}
+
+          {/* Filter & Search Controls */}
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+            {/* Filter Tabs */}
+            <div className="flex bg-stone-100 p-1 rounded-2xl w-full sm:w-auto">
+              {(['all', 'visible', 'hidden'] as const).map((status) => (
+                <button
+                  key={status}
+                  onClick={() => setTemplateFilterStatus(status)}
+                  className={`px-4 py-2 rounded-xl text-xs font-bold transition-all capitalize ${
+                    templateFilterStatus === status
+                      ? 'bg-white text-[#B8860B] shadow-sm'
+                      : 'text-stone-600 hover:text-stone-900'
+                  }`}
+                >
+                  {status === 'all'
+                    ? (lang === 'km' ? `ទាំងអស់ (${allAdminTemplates.length})` : `All (${allAdminTemplates.length})`)
+                    : status === 'visible'
+                    ? (lang === 'km' ? `👁️ បង្ហាញក្នុងប្រព័ន្ធ (${allAdminTemplates.filter(t => !t.hidden).length})` : `Visible (${allAdminTemplates.filter(t => !t.hidden).length})`)
+                    : (lang === 'km' ? `🙈 បានលាក់ (${allAdminTemplates.filter(t => t.hidden).length})` : `Hidden (${allAdminTemplates.filter(t => t.hidden).length})`)}
+                </button>
+              ))}
+            </div>
+
+            {/* Search Input */}
+            <div className="relative w-full sm:w-72">
+              <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-stone-400" />
+              <input
+                type="text"
+                value={templateSearchTerm}
+                onChange={(e) => setTemplateSearchTerm(e.target.value)}
+                placeholder={lang === 'km' ? 'ស្វែងរក Template...' : 'Search template name...'}
+                className="w-full pl-9 pr-4 py-2 rounded-xl border border-stone-200 text-xs focus:outline-none focus:ring-2 focus:ring-[#B8860B]"
+              />
+            </div>
+          </div>
+
+          {/* Templates Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 pt-2">
+            {allAdminTemplates
+              .filter((tmpl) => {
+                if (templateFilterStatus === 'visible' && tmpl.hidden) return false;
+                if (templateFilterStatus === 'hidden' && !tmpl.hidden) return false;
+                if (templateSearchTerm.trim()) {
+                  const q = templateSearchTerm.toLowerCase();
+                  return tmpl.nameKm.toLowerCase().includes(q) || tmpl.nameEn.toLowerCase().includes(q) || tmpl.id.toLowerCase().includes(q);
+                }
+                return true;
+              })
+              .map((tmpl) => {
+                const isHidden = tmpl.hidden;
+
+                return (
+                  <div
+                    key={tmpl.id}
+                    className={`rounded-3xl border-2 transition-all overflow-hidden bg-white flex flex-col justify-between shadow-sm hover:shadow-xl relative ${
+                      isHidden ? 'border-red-300 opacity-75 bg-red-50/20' : 'border-stone-200 hover:border-amber-400'
+                    }`}
+                  >
+                    {/* Status Ribbon & Badge */}
+                    <div className="absolute top-3 left-3 z-10 flex flex-wrap gap-1.5">
+                      <span
+                        className={`px-3 py-1 rounded-full font-bold text-[10px] uppercase tracking-wider shadow-md flex items-center gap-1 ${
+                          isHidden
+                            ? 'bg-red-600 text-white'
+                            : 'bg-emerald-600 text-white'
+                        }`}
+                      >
+                        {isHidden ? (
+                          <>
+                            <EyeOff className="w-3 h-3" />
+                            <span>{lang === 'km' ? 'បានលាក់ (Hidden)' : 'Hidden'}</span>
+                          </>
+                        ) : (
+                          <>
+                            <Eye className="w-3 h-3" />
+                            <span>{lang === 'km' ? 'បង្ហាញ (Visible)' : 'Visible'}</span>
+                          </>
+                        )}
+                      </span>
+
+                      <span className="px-2.5 py-1 rounded-full bg-stone-900/80 backdrop-blur-md text-amber-300 font-bold text-[10px] border border-amber-400/30 shadow-md">
+                        {tmpl.badge}
+                      </span>
+                    </div>
+
+                    {/* Preview Image */}
+                    <div className="relative h-48 w-full overflow-hidden bg-stone-100">
+                      <img
+                        src={tmpl.previewImage || 'https://images.unsplash.com/photo-1519225421980-715cb0215aed?auto=format&fit=crop&w=600&q=80'}
+                        alt={tmpl.nameEn}
+                        className="w-full h-full object-cover"
+                        referrerPolicy="no-referrer"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-stone-950/80 via-transparent to-transparent" />
+                      <div className="absolute bottom-3 left-3 right-3 text-white">
+                        <p className="text-[10px] uppercase font-bold text-amber-300 tracking-wider">
+                          ID: {tmpl.id}
+                        </p>
+                        <h3 className="font-moul text-sm text-white line-clamp-1">
+                          {tmpl.nameKm}
+                        </h3>
+                      </div>
+                    </div>
+
+                    {/* Content Details */}
+                    <div className="p-4 space-y-3 flex-1 flex flex-col justify-between">
+                      <div>
+                        <h4 className="font-bold text-stone-800 text-xs">
+                          {tmpl.nameEn}
+                        </h4>
+                        <p className="text-[11px] text-stone-500 line-clamp-2 mt-1">
+                          {tmpl.taglineKm}
+                        </p>
+                      </div>
+
+                      {/* Control Action Buttons */}
+                      <div className="space-y-2 pt-2 border-t border-stone-100">
+                        <div className="grid grid-cols-2 gap-2">
+                          {/* Toggle Hide/Show Button */}
+                          <button
+                            onClick={() => handleToggleHideTemplate(tmpl.id)}
+                            className={`w-full py-2 px-3 rounded-xl font-bold text-xs transition-all flex items-center justify-center gap-1.5 shadow-xs cursor-pointer ${
+                              isHidden
+                                ? 'bg-emerald-600 hover:bg-emerald-700 text-white'
+                                : 'bg-red-50 hover:bg-red-100 text-red-700 border border-red-200'
+                            }`}
+                          >
+                            {isHidden ? (
+                              <>
+                                <Eye className="w-3.5 h-3.5" />
+                                <span>{lang === 'km' ? 'បង្ហាញឡើងវិញ' : 'Unhide'}</span>
+                              </>
+                            ) : (
+                              <>
+                                <EyeOff className="w-3.5 h-3.5" />
+                                <span>{lang === 'km' ? 'លាក់រចនាបថនេះ' : 'Hide'}</span>
+                              </>
+                            )}
+                          </button>
+
+                          {/* Edit Details Button */}
+                          <button
+                            onClick={() => setEditingTemplate(tmpl)}
+                            className="w-full py-2 px-3 rounded-xl bg-stone-100 hover:bg-stone-200 text-stone-800 font-bold text-xs transition-all flex items-center justify-center gap-1.5 border border-stone-300 cursor-pointer"
+                          >
+                            <Edit3 className="w-3.5 h-3.5 text-stone-600" />
+                            <span>{lang === 'km' ? 'កែប្រែ' : 'Edit'}</span>
+                          </button>
+                        </div>
+
+                        <div className="flex items-center gap-2">
+                          {/* Live Preview Button */}
+                          <button
+                            onClick={() => setPreviewingTemplate(tmpl)}
+                            className="flex-1 py-1.5 px-3 rounded-xl bg-amber-50 hover:bg-amber-100 text-[#B8860B] font-bold text-[11px] transition-all flex items-center justify-center gap-1.5 border border-amber-200 cursor-pointer"
+                          >
+                            <Eye className="w-3.5 h-3.5" />
+                            <span>{lang === 'km' ? 'មើលគំរូធៀប (Preview)' : 'Preview Template'}</span>
+                          </button>
+
+                          {/* Delete Button for Custom Zip Templates */}
+                          {tmpl.isCustom && (
+                            <button
+                              onClick={() => handleDeleteCustomTemplate(tmpl.id)}
+                              className="py-1.5 px-3 rounded-xl bg-red-50 hover:bg-red-100 text-red-600 font-bold text-[11px] transition-all flex items-center justify-center gap-1 border border-red-200 cursor-pointer"
+                              title="Delete custom template"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+          </div>
+        </div>
+      )}
+
       {/* Registered Members Accounts Directory Card */}
       {activeTab === 'members' && (
         <div className="bg-white rounded-3xl border border-blue-200/80 shadow-md p-6 space-y-6 animate-fadeIn">
@@ -1035,6 +1386,245 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ lang, onExitAdmi
                 )}
               </tbody>
             </table>
+          </div>
+        </div>
+      )}
+
+      {/* Template Control Panel Card */}
+      {activeTab === 'templates' && (
+        <div className="bg-white rounded-3xl border border-amber-200/80 shadow-md p-6 space-y-6 animate-fadeIn">
+          {/* Header & Main Publish Action Bar */}
+          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-stone-200 pb-5">
+            <div>
+              <div className="flex items-center gap-2 text-[#B8860B] font-bold text-xs uppercase tracking-widest mb-1">
+                <Palette className="w-4 h-4" />
+                <span>{lang === 'km' ? 'កន្លែងគ្រប់គ្រង Template ធៀបការ' : 'Template Control Panel'}</span>
+              </div>
+              <h2 className="text-xl font-bold text-stone-900 font-moul">
+                {lang === 'km' ? 'គ្រប់គ្រងបណ្តុំរចនាបថធៀបមង្គលការ' : 'Wedding Invitation Template Manager'}
+              </h2>
+              <p className="text-xs text-stone-500 mt-1">
+                {lang === 'km'
+                  ? 'អ្នកអាចលាក់/បង្ហាញ (Hide/Show) ផ្លាស់ប្តូរព័ត៌មាន បញ្ចូល ZIP Custom ថ្មី និងចុចប៊ូតុង "ដាក់បញ្ចូលទៅកាន់ User Member" ដើម្បីអោយសមាជិកប្រើប្រាស់'
+                  : 'Hide/Show any template, edit details, upload zip themes, and publish to make available for members.'}
+              </p>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="flex flex-wrap items-center gap-3">
+              {/* Upload Zip Button */}
+              <label className="cursor-pointer px-4 py-2.5 rounded-xl bg-stone-100 hover:bg-stone-200 text-stone-800 font-bold text-xs shadow-sm border border-stone-300 transition-all flex items-center gap-2">
+                <Upload className="w-4 h-4 text-purple-600" />
+                <span>{isUploadingZip ? (lang === 'km' ? 'កំពុងដំណើការ...' : 'Uploading...') : (lang === 'km' ? '➕ អាប់ឡូត ZIP Template ថ្មី' : 'Upload ZIP Template')}</span>
+                <input
+                  type="file"
+                  accept=".zip"
+                  onChange={handleZipFileUpload}
+                  className="hidden"
+                  disabled={isUploadingZip}
+                />
+              </label>
+
+              {/* PUBLISH BUTTON */}
+              <button
+                onClick={handlePublishTemplates}
+                disabled={isPublishing}
+                className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-[#B8860B] to-[#966b08] hover:from-[#966b08] hover:to-[#8C6D3B] text-white font-bold text-xs shadow-lg transition-all flex items-center gap-2 border border-amber-300/40 transform active:scale-95 cursor-pointer"
+              >
+                <Send className={`w-4 h-4 text-amber-200 ${isPublishing ? 'animate-spin' : ''}`} />
+                <span>
+                  {isPublishing
+                    ? (lang === 'km' ? 'កំពុង Sync ទៅកាន់សមាជិក...' : 'Syncing...')
+                    : (lang === 'km' ? '🚀 ដាក់បញ្ចូលទៅកាន់ User Member អោយប្រើប្រាស់' : 'Publish / Sync to User Members')}
+                </span>
+              </button>
+            </div>
+          </div>
+
+          {/* Success Banner */}
+          {publishSuccessMessage && (
+            <div className="p-4 rounded-2xl bg-emerald-50 border-2 border-emerald-300 text-emerald-900 font-bold text-xs flex items-center gap-3 animate-fadeIn">
+              <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0" />
+              <span>{publishSuccessMessage}</span>
+            </div>
+          )}
+
+          {/* Filter & Search Controls */}
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+            {/* Filter Tabs */}
+            <div className="flex bg-stone-100 p-1 rounded-2xl w-full sm:w-auto">
+              {(['all', 'visible', 'hidden'] as const).map((status) => (
+                <button
+                  key={status}
+                  onClick={() => setTemplateFilterStatus(status)}
+                  className={`px-4 py-2 rounded-xl text-xs font-bold transition-all capitalize ${
+                    templateFilterStatus === status
+                      ? 'bg-white text-[#B8860B] shadow-sm'
+                      : 'text-stone-600 hover:text-stone-900'
+                  }`}
+                >
+                  {status === 'all'
+                    ? (lang === 'km' ? `ទាំងអស់ (${allAdminTemplates.length})` : `All (${allAdminTemplates.length})`)
+                    : status === 'visible'
+                    ? (lang === 'km' ? `👁️ បង្ហាញក្នុងប្រព័ន្ធ (${allAdminTemplates.filter(t => !t.hidden).length})` : `Visible (${allAdminTemplates.filter(t => !t.hidden).length})`)
+                    : (lang === 'km' ? `🙈 បានលាក់ (${allAdminTemplates.filter(t => t.hidden).length})` : `Hidden (${allAdminTemplates.filter(t => t.hidden).length})`)}
+                </button>
+              ))}
+            </div>
+
+            {/* Search Input */}
+            <div className="relative w-full sm:w-72">
+              <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-stone-400" />
+              <input
+                type="text"
+                value={templateSearchTerm}
+                onChange={(e) => setTemplateSearchTerm(e.target.value)}
+                placeholder={lang === 'km' ? 'ស្វែងរក Template...' : 'Search template name...'}
+                className="w-full pl-9 pr-4 py-2 rounded-xl border border-stone-200 text-xs focus:outline-none focus:ring-2 focus:ring-[#B8860B]"
+              />
+            </div>
+          </div>
+
+          {/* Templates Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 pt-2">
+            {allAdminTemplates
+              .filter((tmpl) => {
+                if (templateFilterStatus === 'visible' && tmpl.hidden) return false;
+                if (templateFilterStatus === 'hidden' && !tmpl.hidden) return false;
+                if (templateSearchTerm.trim()) {
+                  const q = templateSearchTerm.toLowerCase();
+                  return tmpl.nameKm.toLowerCase().includes(q) || tmpl.nameEn.toLowerCase().includes(q) || tmpl.id.toLowerCase().includes(q);
+                }
+                return true;
+              })
+              .map((tmpl) => {
+                const isHidden = tmpl.hidden;
+
+                return (
+                  <div
+                    key={tmpl.id}
+                    className={`rounded-3xl border-2 transition-all overflow-hidden bg-white flex flex-col justify-between shadow-sm hover:shadow-xl relative ${
+                      isHidden ? 'border-red-300 opacity-75 bg-red-50/20' : 'border-stone-200 hover:border-amber-400'
+                    }`}
+                  >
+                    {/* Status Ribbon & Badge */}
+                    <div className="absolute top-3 left-3 z-10 flex flex-wrap gap-1.5">
+                      <span
+                        className={`px-3 py-1 rounded-full font-bold text-[10px] uppercase tracking-wider shadow-md flex items-center gap-1 ${
+                          isHidden
+                            ? 'bg-red-600 text-white'
+                            : 'bg-emerald-600 text-white'
+                        }`}
+                      >
+                        {isHidden ? (
+                          <>
+                            <EyeOff className="w-3 h-3" />
+                            <span>{lang === 'km' ? 'បានលាក់ (Hidden)' : 'Hidden'}</span>
+                          </>
+                        ) : (
+                          <>
+                            <Eye className="w-3 h-3" />
+                            <span>{lang === 'km' ? 'បង្ហាញ (Visible)' : 'Visible'}</span>
+                          </>
+                        )}
+                      </span>
+
+                      <span className="px-2.5 py-1 rounded-full bg-stone-900/80 backdrop-blur-md text-amber-300 font-bold text-[10px] border border-amber-400/30 shadow-md">
+                        {tmpl.badge}
+                      </span>
+                    </div>
+
+                    {/* Preview Image */}
+                    <div className="relative h-48 w-full overflow-hidden bg-stone-100">
+                      <img
+                        src={tmpl.previewImage || 'https://images.unsplash.com/photo-1519225421980-715cb0215aed?auto=format&fit=crop&w=600&q=80'}
+                        alt={tmpl.nameEn}
+                        className="w-full h-full object-cover"
+                        referrerPolicy="no-referrer"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-stone-950/80 via-transparent to-transparent" />
+                      <div className="absolute bottom-3 left-3 right-3 text-white">
+                        <p className="text-[10px] uppercase font-bold text-amber-300 tracking-wider">
+                          ID: {tmpl.id}
+                        </p>
+                        <h3 className="font-moul text-sm text-white line-clamp-1">
+                          {tmpl.nameKm}
+                        </h3>
+                      </div>
+                    </div>
+
+                    {/* Content Details */}
+                    <div className="p-4 space-y-3 flex-1 flex flex-col justify-between">
+                      <div>
+                        <h4 className="font-bold text-stone-800 text-xs">
+                          {tmpl.nameEn}
+                        </h4>
+                        <p className="text-[11px] text-stone-500 line-clamp-2 mt-1">
+                          {tmpl.taglineKm}
+                        </p>
+                      </div>
+
+                      {/* Control Action Buttons */}
+                      <div className="space-y-2 pt-2 border-t border-stone-100">
+                        <div className="grid grid-cols-2 gap-2">
+                          {/* Toggle Hide/Show Button */}
+                          <button
+                            onClick={() => handleToggleHideTemplate(tmpl.id)}
+                            className={`w-full py-2 px-3 rounded-xl font-bold text-xs transition-all flex items-center justify-center gap-1.5 shadow-xs cursor-pointer ${
+                              isHidden
+                                ? 'bg-emerald-600 hover:bg-emerald-700 text-white'
+                                : 'bg-red-50 hover:bg-red-100 text-red-700 border border-red-200'
+                            }`}
+                          >
+                            {isHidden ? (
+                              <>
+                                <Eye className="w-3.5 h-3.5" />
+                                <span>{lang === 'km' ? 'បង្ហាញឡើងវិញ' : 'Unhide'}</span>
+                              </>
+                            ) : (
+                              <>
+                                <EyeOff className="w-3.5 h-3.5" />
+                                <span>{lang === 'km' ? 'លាក់រចនាបថនេះ' : 'Hide'}</span>
+                              </>
+                            )}
+                          </button>
+
+                          {/* Edit Details Button */}
+                          <button
+                            onClick={() => setEditingTemplate(tmpl)}
+                            className="w-full py-2 px-3 rounded-xl bg-stone-100 hover:bg-stone-200 text-stone-800 font-bold text-xs transition-all flex items-center justify-center gap-1.5 border border-stone-300 cursor-pointer"
+                          >
+                            <Edit3 className="w-3.5 h-3.5 text-stone-600" />
+                            <span>{lang === 'km' ? 'កែប្រែ' : 'Edit'}</span>
+                          </button>
+                        </div>
+
+                        <div className="flex items-center gap-2">
+                          {/* Live Preview Button */}
+                          <button
+                            onClick={() => setPreviewingTemplate(tmpl)}
+                            className="flex-1 py-1.5 px-3 rounded-xl bg-amber-50 hover:bg-amber-100 text-[#B8860B] font-bold text-[11px] transition-all flex items-center justify-center gap-1.5 border border-amber-200 cursor-pointer"
+                          >
+                            <Eye className="w-3.5 h-3.5" />
+                            <span>{lang === 'km' ? 'មើលគំរូធៀប (Preview)' : 'Preview Template'}</span>
+                          </button>
+
+                          {/* Delete Button for Custom Zip Templates */}
+                          {tmpl.isCustom && (
+                            <button
+                              onClick={() => handleDeleteCustomTemplate(tmpl.id)}
+                              className="py-1.5 px-3 rounded-xl bg-red-50 hover:bg-red-100 text-red-600 font-bold text-[11px] transition-all flex items-center justify-center gap-1 border border-red-200 cursor-pointer"
+                              title="Delete custom template"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
           </div>
         </div>
       )}
@@ -1507,6 +2097,118 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ lang, onExitAdmi
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Template Modal */}
+      {editingTemplate && (
+        <div className="fixed inset-0 z-50 bg-stone-900/60 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto animate-fadeIn">
+          <div className="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl border border-stone-200 space-y-5 my-8">
+            <div className="flex items-center justify-between border-b border-stone-100 pb-3">
+              <div className="flex items-center gap-2 text-[#B8860B]">
+                <Edit3 className="w-5 h-5" />
+                <h3 className="font-moul text-base text-stone-900">
+                  {lang === 'km' ? 'កែប្រែព័ត៌មាន Template' : 'Edit Template Information'}
+                </h3>
+              </div>
+              <button
+                onClick={() => setEditingTemplate(null)}
+                className="p-1.5 rounded-full hover:bg-stone-100 text-stone-400 hover:text-stone-700 cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <form onSubmit={handleSaveEditedTemplate} className="space-y-4">
+              <div className="space-y-1">
+                <label className="block text-xs font-bold text-stone-700">
+                  {lang === 'km' ? 'ឈ្មោះ Template (ភាសាខ្មែរ)' : 'Template Name (Khmer)'}
+                </label>
+                <input
+                  type="text"
+                  value={editingTemplate.nameKm}
+                  onChange={(e) => setEditingTemplate({ ...editingTemplate, nameKm: e.target.value })}
+                  className="w-full px-3 py-2 rounded-xl border border-stone-300 text-xs font-bold text-stone-800"
+                  required
+                />
+              </div>
+
+              <div className="space-y-1">
+                <label className="block text-xs font-bold text-stone-700">
+                  {lang === 'km' ? 'ឈ្មោះ Template (ភាសាអង់គ្លេស)' : 'Template Name (English)'}
+                </label>
+                <input
+                  type="text"
+                  value={editingTemplate.nameEn}
+                  onChange={(e) => setEditingTemplate({ ...editingTemplate, nameEn: e.target.value })}
+                  className="w-full px-3 py-2 rounded-xl border border-stone-300 text-xs text-stone-800"
+                  required
+                />
+              </div>
+
+              <div className="space-y-1">
+                <label className="block text-xs font-bold text-stone-700">
+                  {lang === 'km' ? 'ស្លាកសញ្ញា Badge' : 'Badge Tag'}
+                </label>
+                <input
+                  type="text"
+                  value={editingTemplate.badge}
+                  onChange={(e) => setEditingTemplate({ ...editingTemplate, badge: e.target.value })}
+                  className="w-full px-3 py-2 rounded-xl border border-stone-300 text-xs text-stone-800"
+                  placeholder="e.g. ពេញនិយមបំផុត"
+                />
+              </div>
+
+              <div className="space-y-1">
+                <label className="block text-xs font-bold text-stone-700">
+                  {lang === 'km' ? 'ការពិពណ៌នាសង្ខេប Tagline (ភាសាខ្មែរ)' : 'Tagline Description (Khmer)'}
+                </label>
+                <textarea
+                  rows={2}
+                  value={editingTemplate.taglineKm}
+                  onChange={(e) => setEditingTemplate({ ...editingTemplate, taglineKm: e.target.value })}
+                  className="w-full px-3 py-2 rounded-xl border border-stone-300 text-xs text-stone-800"
+                />
+              </div>
+
+              <div className="flex items-center justify-end gap-3 pt-3 border-t border-stone-100">
+                <button
+                  type="button"
+                  onClick={() => setEditingTemplate(null)}
+                  className="px-4 py-2 rounded-xl bg-stone-100 text-stone-700 font-bold text-xs hover:bg-stone-200 cursor-pointer"
+                >
+                  {lang === 'km' ? 'បោះបង់' : 'Cancel'}
+                </button>
+                <button
+                  type="submit"
+                  className="px-5 py-2 rounded-xl bg-[#B8860B] text-white font-bold text-xs hover:bg-[#966b08] shadow-md flex items-center gap-1.5 cursor-pointer"
+                >
+                  <Save className="w-4 h-4" />
+                  <span>{lang === 'km' ? 'រក្សាទុក' : 'Save Changes'}</span>
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Preview Template Modal */}
+      {previewingTemplate && (
+        <div className="fixed inset-0 z-50 bg-stone-950/80 backdrop-blur-md flex items-center justify-center p-2 sm:p-4 overflow-y-auto animate-fadeIn">
+          <div className="bg-white rounded-3xl max-w-2xl w-full max-h-[90vh] overflow-y-auto p-4 sm:p-6 shadow-2xl relative">
+            <button
+              onClick={() => setPreviewingTemplate(null)}
+              className="absolute top-4 right-4 z-20 p-2 rounded-full bg-stone-900/80 text-white hover:bg-stone-900 transition-all shadow-lg cursor-pointer"
+            >
+              <X className="w-5 h-5" />
+            </button>
+            <InvitationCard
+              data={{
+                ...SAMPLE_INVITATIONS[0],
+                templateId: previewingTemplate.id,
+              }}
+            />
           </div>
         </div>
       )}

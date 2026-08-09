@@ -147,7 +147,33 @@ export const ChateauBlueInvitationView: React.FC<ChateauBlueProps> = ({
   )}&location=${encodeURIComponent(data.venueNameEn || data.venueNameKm || data.addressEn)}`;
 
   return (
-    <div className={`relative w-full flex-1 flex flex-col space-y-12 p-3 sm:p-5 pb-24 text-[#0F172A] bg-white animate-fadeIn ${lang === 'km' ? 'font-kantumruy' : 'font-serif'}`}>
+    <div className={`relative w-full flex-1 flex flex-col space-y-12 p-3 sm:p-5 pb-24 text-[#0F172A] bg-white animate-fadeIn overflow-hidden ${lang === 'km' ? 'font-kantumruy' : 'font-serif'}`}>
+      
+      {/* Dynamic Floating Scroll Background Motion Petals & Sparkles */}
+      <div className="absolute inset-0 pointer-events-none z-0 overflow-hidden">
+        <motion.div
+          animate={{ y: [0, 400, 800], x: [0, 20, -20], opacity: [0.3, 0.6, 0.2] }}
+          transition={{ duration: 15, repeat: Infinity, ease: 'linear' }}
+          className="absolute top-10 left-4 text-blue-300/40 text-lg"
+        >
+          ❀
+        </motion.div>
+        <motion.div
+          animate={{ y: [0, 600, 1000], x: [0, -30, 15], opacity: [0.2, 0.5, 0.1] }}
+          transition={{ duration: 18, repeat: Infinity, ease: 'linear', delay: 2 }}
+          className="absolute top-20 right-6 text-amber-300/40 text-base"
+        >
+          ✨
+        </motion.div>
+        <motion.div
+          animate={{ y: [0, 500, 900], x: [0, 25, -15], opacity: [0.4, 0.7, 0.2] }}
+          transition={{ duration: 14, repeat: Infinity, ease: 'linear', delay: 5 }}
+          className="absolute top-1/3 left-1/2 text-blue-200/50 text-sm"
+        >
+          🍃
+        </motion.div>
+      </div>
+
       {/* Sticky Controls Bar */}
       <div className="sticky top-0 z-40 w-full px-3 py-2 bg-white/90 backdrop-blur-md border-b border-blue-100 flex items-center justify-between text-xs rounded-b-2xl shadow-xs">
         <div className="inline-flex items-center gap-1 p-0.5 rounded-full bg-slate-100 border border-slate-200 text-[11px] font-bold text-slate-700">
@@ -180,11 +206,25 @@ export const ChateauBlueInvitationView: React.FC<ChateauBlueProps> = ({
       </div>
 
       {/* 1. HEADER SECTION: TITLE, NAMES & CHÂTEAU WATERCOLOR ESTATE */}
-      <section className="text-center space-y-4 pt-2">
-        <div className="flex items-center justify-center gap-2 text-[11px] tracking-widest text-slate-400 uppercase">
-          <span>―</span>
-          <span>{lang === 'km' ? 'សូមស្វាគមន៍មកកាន់ពិធីមង្គលការរបស់យើង' : 'WELCOME TO OUR WEDDING'}</span>
-          <span>―</span>
+      <motion.section
+        initial={{ opacity: 0, y: 30 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: false, amount: 0.15 }}
+        transition={{ duration: 0.7, ease: 'easeOut' }}
+        className="text-center space-y-4 pt-2 relative z-10"
+      >
+        <div className="flex items-center justify-center gap-2 py-1">
+          <span className="text-amber-500 text-xs sm:text-sm filter drop-shadow">⚜️</span>
+          <span
+            className={`tracking-wider ${
+              lang === 'km'
+                ? 'font-moul text-base sm:text-lg text-[#B8860B] drop-shadow-xs leading-relaxed'
+                : 'font-serif text-xs tracking-[0.25em] text-slate-600 uppercase font-bold'
+            }`}
+          >
+            {lang === 'km' ? 'សិរីមង្គលអាពាហ៍ពិពាហ៍' : 'HOLY MATRIMONY'}
+          </span>
+          <span className="text-amber-500 text-xs sm:text-sm filter drop-shadow">⚜️</span>
         </div>
 
         <div className="space-y-1">
@@ -203,25 +243,31 @@ export const ChateauBlueInvitationView: React.FC<ChateauBlueProps> = ({
             src={
               data.coverPhotoUrl && !data.coverPhotoUrl.includes('unsplash.com/photo-1519741497674')
                 ? data.coverPhotoUrl
-                : 'https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?auto=format&fit=crop&w=1000&q=80'
+                : galleryPhotosList[0] || 'https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?auto=format&fit=crop&w=1000&q=80'
             }
             alt="Château Estate"
             className="w-full h-[280px] sm:h-[340px] object-cover transition-transform duration-1000 group-hover:scale-105"
             referrerPolicy="no-referrer"
           />
         </div>
-      </section>
+      </motion.section>
 
       {/* 2. CEREMONY INFO SECTION */}
-      <section className="text-center space-y-6 pt-4 border-t border-slate-100">
+      <motion.section
+        initial={{ opacity: 0, y: 35 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: false, amount: 0.15 }}
+        transition={{ duration: 0.7, ease: 'easeOut' }}
+        className="text-center space-y-6 pt-4 border-t border-slate-100 relative z-10"
+      >
         {/* Blue Floral Divider Graphic */}
         <div className="flex items-center justify-center gap-2 text-blue-300 text-sm">
           <span>🍃</span>
-          <span className="text-lg">❀</span>
+          <span className="text-lg animate-pulse">❀</span>
           <span>🍃</span>
         </div>
 
-        <h2 className="text-xs tracking-[0.25em] text-slate-500 uppercase font-bold">
+        <h2 className={`uppercase font-bold ${lang === 'km' ? 'font-moul text-sm text-[#B8860B]' : 'text-xs tracking-[0.25em] text-slate-500'}`}>
           {lang === 'km' ? '― ព័ត៌មានពិធីសិរីមង្គល ―' : '― CEREMONY INFO ―'}
         </h2>
 
@@ -299,17 +345,24 @@ export const ChateauBlueInvitationView: React.FC<ChateauBlueProps> = ({
 
           <p className="text-xs tracking-widest text-slate-400 font-semibold">{year}</p>
         </div>
-      </section>
+      </motion.section>
 
       {/* 3. OUR STORY / BENTO PHOTO GALLERY */}
-      <section className="space-y-4 pt-4 border-t border-slate-100">
-        <h2 className="text-center text-xs tracking-[0.25em] text-slate-500 uppercase font-bold">
+      <motion.section
+        initial={{ opacity: 0, y: 35 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: false, amount: 0.15 }}
+        transition={{ duration: 0.7, ease: 'easeOut' }}
+        className="space-y-4 pt-4 border-t border-slate-100 relative z-10"
+      >
+        <h2 className={`text-center uppercase font-bold ${lang === 'km' ? 'font-moul text-sm text-[#B8860B]' : 'text-xs tracking-[0.25em] text-slate-500'}`}>
           {lang === 'km' ? '― រូបថតអនុស្សាវរីយ៍ ―' : '― OUR STORY ―'}
         </h2>
 
         <div className="grid grid-cols-2 gap-2 pt-2">
           {/* Left Tall Portrait Photo */}
-          <div
+          <motion.div
+            whileHover={{ scale: 1.02 }}
             onClick={() => {
               setActivePhotoIdx(0);
               setIsPhotoLightboxOpen(true);
@@ -322,10 +375,11 @@ export const ChateauBlueInvitationView: React.FC<ChateauBlueProps> = ({
               className="w-full h-full min-h-[220px] object-cover transition-transform duration-500 group-hover:scale-105"
               referrerPolicy="no-referrer"
             />
-          </div>
+          </motion.div>
 
           {/* Top Right Photo */}
-          <div
+          <motion.div
+            whileHover={{ scale: 1.02 }}
             onClick={() => {
               setActivePhotoIdx(1);
               setIsPhotoLightboxOpen(true);
@@ -338,10 +392,11 @@ export const ChateauBlueInvitationView: React.FC<ChateauBlueProps> = ({
               className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
               referrerPolicy="no-referrer"
             />
-          </div>
+          </motion.div>
 
           {/* Middle Right Photo */}
-          <div
+          <motion.div
+            whileHover={{ scale: 1.02 }}
             onClick={() => {
               setActivePhotoIdx(2);
               setIsPhotoLightboxOpen(true);
@@ -354,10 +409,11 @@ export const ChateauBlueInvitationView: React.FC<ChateauBlueProps> = ({
               className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
               referrerPolicy="no-referrer"
             />
-          </div>
+          </motion.div>
 
           {/* Bottom Left Photo */}
-          <div
+          <motion.div
+            whileHover={{ scale: 1.02 }}
             onClick={() => {
               setActivePhotoIdx(3 % galleryPhotosList.length);
               setIsPhotoLightboxOpen(true);
@@ -370,10 +426,11 @@ export const ChateauBlueInvitationView: React.FC<ChateauBlueProps> = ({
               className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
               referrerPolicy="no-referrer"
             />
-          </div>
+          </motion.div>
 
           {/* Bottom Right Photo with Lightbox Overlay */}
-          <div
+          <motion.div
+            whileHover={{ scale: 1.02 }}
             onClick={() => {
               setActivePhotoIdx(0);
               setIsPhotoLightboxOpen(true);
@@ -389,16 +446,22 @@ export const ChateauBlueInvitationView: React.FC<ChateauBlueProps> = ({
             <div className="absolute inset-0 bg-slate-900/60 flex items-center justify-center text-white font-bold text-sm tracking-wide group-hover:bg-slate-900/40 transition-colors">
               + {galleryPhotosList.length}
             </div>
-          </div>
+          </motion.div>
         </div>
-      </section>
+      </motion.section>
 
       {/* 4. RECEPTION INFO SECTION */}
-      <section className="text-center space-y-6 pt-4 border-t border-slate-100">
+      <motion.section
+        initial={{ opacity: 0, y: 35 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: false, amount: 0.15 }}
+        transition={{ duration: 0.7, ease: 'easeOut' }}
+        className="text-center space-y-6 pt-4 border-t border-slate-100 relative z-10"
+      >
         {/* Blue Crest Icon */}
         <div className="text-blue-400 text-xl">❀</div>
 
-        <h2 className="text-xs tracking-[0.25em] text-slate-500 uppercase font-bold">
+        <h2 className={`uppercase font-bold ${lang === 'km' ? 'font-moul text-sm text-[#B8860B]' : 'text-xs tracking-[0.25em] text-slate-500'}`}>
           {lang === 'km' ? '― ពិធីលៀងសាយភោជន៍ ―' : '― RECEPTION INFO ―'}
         </h2>
 
@@ -511,21 +574,36 @@ export const ChateauBlueInvitationView: React.FC<ChateauBlueProps> = ({
             {lang === 'km' ? 'ឆ្លើយតបការអញ្ជើញ (RSVP)' : 'RSVP'}
           </button>
         </div>
-      </section>
+      </motion.section>
 
       {/* 5. RECEPTION VENUE SECTION */}
-      <section id="location-chateau" className="text-center space-y-4 pt-4 border-t border-slate-100">
-        {/* Table Candle Artwork */}
-        <div className="relative w-full max-w-xs mx-auto rounded-2xl overflow-hidden shadow-md border border-slate-100">
+      <motion.section
+        id="location-chateau"
+        initial={{ opacity: 0, y: 35 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: false, amount: 0.15 }}
+        transition={{ duration: 0.7, ease: 'easeOut' }}
+        className="text-center space-y-4 pt-4 border-t border-slate-100 relative z-10"
+      >
+        {/* Dynamic Venue / Hall Photo (Fully replaceble from uploaded user photos or location photo) */}
+        <div className="relative w-full max-w-xs mx-auto rounded-2xl overflow-hidden shadow-lg border border-blue-100 group">
           <img
-            src="https://images.unsplash.com/photo-1519225421980-715cb0215aed?auto=format&fit=crop&w=600&q=80"
+            src={
+              data.locationPhotoUrl ||
+              galleryPhotosList[3] ||
+              galleryPhotosList[2] ||
+              galleryPhotosList[0] ||
+              data.couplePhotoUrl ||
+              data.coverPhotoUrl ||
+              'https://images.unsplash.com/photo-1519225421980-715cb0215aed?auto=format&fit=crop&w=600&q=80'
+            }
             alt="Venue Table Setting"
-            className="w-full h-44 object-cover"
+            className="w-full h-48 object-cover transition-transform duration-700 group-hover:scale-105"
             referrerPolicy="no-referrer"
           />
         </div>
 
-        <h2 className="text-xs tracking-[0.25em] text-slate-500 uppercase font-bold">
+        <h2 className={`uppercase font-bold ${lang === 'km' ? 'font-moul text-sm text-[#B8860B]' : 'text-xs tracking-[0.25em] text-slate-500'}`}>
           {lang === 'km' ? '― ទីតាំងប្រារព្ធពិធី ―' : '― RECEPTION VENUE ―'}
         </h2>
 
@@ -552,14 +630,21 @@ export const ChateauBlueInvitationView: React.FC<ChateauBlueProps> = ({
             )}&t=&z=14&ie=UTF8&iwloc=&output=embed`}
           />
         </div>
-      </section>
+      </motion.section>
 
       {/* 6. WEDDING DAY SCHEDULE SECTION (FULLY DYNAMIC & KHMER SUPPORTED) */}
-      <section id="schedule-chateau" className="space-y-4 pt-4 border-t border-slate-100">
+      <motion.section
+        id="schedule-chateau"
+        initial={{ opacity: 0, y: 35 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: false, amount: 0.15 }}
+        transition={{ duration: 0.7, ease: 'easeOut' }}
+        className="space-y-4 pt-4 border-t border-slate-100 relative z-10"
+      >
         <div className="text-center space-y-1">
           <div className="flex items-center justify-center gap-1.5 text-blue-800">
             <Clock className="w-4 h-4" />
-            <h2 className={`text-xs tracking-[0.2em] text-[#1E3A8A] uppercase font-bold ${lang === 'km' ? 'font-moul text-sm' : ''}`}>
+            <h2 className={`uppercase font-bold ${lang === 'km' ? 'font-moul text-sm text-[#B8860B]' : 'text-xs tracking-[0.2em] text-[#1E3A8A]'}`}>
               {lang === 'km' ? '― កម្មវិធីសិរីមង្គល (កាលវិភាគ) ―' : '― WEDDING DAY SCHEDULE ―'}
             </h2>
           </div>
@@ -571,8 +656,12 @@ export const ChateauBlueInvitationView: React.FC<ChateauBlueProps> = ({
         {/* Dynamic Timeline Schedule List */}
         <div className="space-y-3 pt-2 max-w-sm mx-auto">
           {scheduleItems.map((item, idx) => (
-            <div
+            <motion.div
               key={item.id || idx}
+              initial={{ opacity: 0, x: -20 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: false }}
+              transition={{ duration: 0.5, delay: idx * 0.1 }}
               className="p-3.5 bg-slate-50/90 rounded-2xl border border-blue-100/90 shadow-2xs hover:border-blue-300 transition-all flex items-start gap-3"
             >
               {/* Time Badge */}
@@ -591,14 +680,21 @@ export const ChateauBlueInvitationView: React.FC<ChateauBlueProps> = ({
                   </p>
                 )}
               </div>
-            </div>
+            </motion.div>
           ))}
         </div>
-      </section>
+      </motion.section>
 
       {/* 7. GUEST WISHES / RSVP SECTION */}
-      <section id="guestwishes-chateau" className="space-y-6 pt-4 border-t border-slate-100">
-        <h2 className="text-center text-xs tracking-[0.25em] text-slate-500 uppercase font-bold">
+      <motion.section
+        id="guestwishes-chateau"
+        initial={{ opacity: 0, y: 35 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: false, amount: 0.15 }}
+        transition={{ duration: 0.7, ease: 'easeOut' }}
+        className="space-y-6 pt-4 border-t border-slate-100 relative z-10"
+      >
+        <h2 className={`text-center uppercase font-bold ${lang === 'km' ? 'font-moul text-sm text-[#B8860B]' : 'text-xs tracking-[0.25em] text-slate-500'}`}>
           {lang === 'km' ? '― សៀវភៅចំណងដៃ និងពរជ័យ ―' : '― GUEST WISHES ―'}
         </h2>
 
@@ -700,7 +796,7 @@ export const ChateauBlueInvitationView: React.FC<ChateauBlueProps> = ({
           <span>•</span>
           <span>🕊️</span>
         </div>
-      </section>
+      </motion.section>
     </div>
   );
 };

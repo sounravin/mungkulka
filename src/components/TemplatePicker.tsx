@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { TemplateId, TemplateTheme } from '../types';
-import { getAllTemplates, fetchCustomTemplates } from '../utils/templateManager';
+import { getAllTemplates, getVisibleTemplates, fetchCustomTemplates } from '../utils/templateManager';
 import { Check, Eye, Sparkles, Wand2 } from 'lucide-react';
 
 interface TemplatePickerProps {
@@ -16,15 +16,15 @@ export const TemplatePicker: React.FC<TemplatePickerProps> = ({
   onPreviewTemplate,
   lang,
 }) => {
-  const [templates, setTemplates] = useState<TemplateTheme[]>(() => getAllTemplates());
+  const [templates, setTemplates] = useState<TemplateTheme[]>(() => getVisibleTemplates());
 
   useEffect(() => {
     fetchCustomTemplates().then(() => {
-      setTemplates(getAllTemplates());
+      setTemplates(getVisibleTemplates());
     });
 
     const handleUpdate = () => {
-      setTemplates(getAllTemplates());
+      setTemplates(getVisibleTemplates());
     };
 
     window.addEventListener('templates-updated', handleUpdate);

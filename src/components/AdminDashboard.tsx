@@ -58,6 +58,12 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ lang, onExitAdmi
     return sessionStorage.getItem('mongkulkar_admin_auth') === 'true';
   });
 
+  useEffect(() => {
+    if (sessionStorage.getItem('mongkulkar_admin_auth') === 'true') {
+      setIsAuthenticated(true);
+    }
+  }, []);
+
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [loginError, setLoginError] = useState<string | null>(null);
@@ -272,7 +278,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ lang, onExitAdmi
 
     window.addEventListener('templates-updated', handleTemplatesUpdated);
     return () => window.removeEventListener('templates-updated', handleTemplatesUpdated);
-  }, [isAuthenticated]);
+  }, [isAuthenticated, activeTab]);
 
   // Subscribe to Realtime events across tabs & components
   useEffect(() => {
@@ -309,7 +315,9 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ lang, onExitAdmi
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
     setLoginError(null);
-    if (username === 'admin' && password === 'admin') {
+    const trimmedUser = username.trim().toLowerCase();
+    const trimmedPass = password.trim();
+    if (trimmedUser === 'admin' && (trimmedPass === 'admin' || trimmedPass === 'admin123')) {
       setIsAuthenticated(true);
       sessionStorage.setItem('mongkulkar_admin_auth', 'true');
     } else {
@@ -497,9 +505,9 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ lang, onExitAdmi
     const matchesStatus = statusFilter === 'all' || ord.status === statusFilter;
     const searchLower = searchTerm.toLowerCase();
     const matchesSearch =
-      ord.memberName.toLowerCase().includes(searchLower) ||
-      ord.memberPhone.includes(searchLower) ||
-      ord.orderCode.toLowerCase().includes(searchLower) ||
+      (ord.memberName || '').toLowerCase().includes(searchLower) ||
+      (ord.memberPhone || '').includes(searchLower) ||
+      (ord.orderCode || '').toLowerCase().includes(searchLower) ||
       (ord.activationCode && ord.activationCode.toLowerCase().includes(searchLower));
     return matchesStatus && matchesSearch;
   });
@@ -513,8 +521,8 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ lang, onExitAdmi
 
     const searchLower = memberSearchTerm.toLowerCase();
     const matchesSearch =
-      m.name.toLowerCase().includes(searchLower) ||
-      m.phone.includes(searchLower) ||
+      (m.name || '').toLowerCase().includes(searchLower) ||
+      (m.phone || '').includes(searchLower) ||
       (m.activatedPackage?.activationCode && m.activatedPackage.activationCode.toLowerCase().includes(searchLower));
 
     return matchesStatus && matchesSearch;

@@ -352,7 +352,7 @@ async function startServer() {
       return res.json(adminAcc);
     }
 
-    const member = dbData.members.find((m) => m.phone.replace(/\s+/g, "") === phone);
+    const member = dbData.members.find((m) => (m.phone || "").replace(/\s+/g, "") === phone);
     if (!member) {
       return res.status(404).json({ error: "Member not found" });
     }
@@ -376,7 +376,7 @@ async function startServer() {
       return res.status(400).json({ error: "សូមបញ្ចូលពាក្យសម្ងាត់ (Please enter password)" });
     }
 
-    const existing = dbData.members.find((m) => m.phone.replace(/\s+/g, "") === trimmedPhone);
+    const existing = dbData.members.find((m) => (m.phone || "").replace(/\s+/g, "") === trimmedPhone);
     if (existing) {
       return res.status(400).json({ error: "លេខទូរស័ព្ទនេះបានចុះឈ្មោះរួចហើយ! (Phone already registered)" });
     }
@@ -451,7 +451,7 @@ async function startServer() {
       }
     }
 
-    const member = dbData.members.find((m) => m.phone.replace(/\s+/g, "") === trimmedPhone);
+    const member = dbData.members.find((m) => (m.phone || "").replace(/\s+/g, "") === trimmedPhone);
     if (!member) {
       return res.status(404).json({ error: "មិនទាន់មានគណនីជាមួយលេខទូរស័ព្ទនេះទេ! (Account not found. Please register first)" });
     }

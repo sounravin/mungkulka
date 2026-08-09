@@ -31,7 +31,7 @@ import {
   Trash2,
 } from 'lucide-react';
 import { PackageOrder, PackageTier, UnlockedPackage, MemberAccount, TemplateTheme } from '../types';
-import { addMemberNotification, activateMemberPackage, getMembers } from '../utils/memberStorage';
+import { addMemberNotification, activateMemberPackage, getMembers, getLoggedMember, setLoggedMember } from '../utils/memberStorage';
 import { subscribeRealtime, notifyRealtimeEvent } from '../utils/realtime';
 import { getSystemConfig, saveSystemConfig, SystemConfig } from '../utils/systemConfig';
 import { compressImage } from '../utils/imageCompressor';
@@ -55,12 +55,23 @@ interface AdminDashboardProps {
 
 export const AdminDashboard: React.FC<AdminDashboardProps> = ({ lang, onExitAdmin }) => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => {
-    return sessionStorage.getItem('mongkulkar_admin_auth') === 'true';
+    const current = getLoggedMember();
+    return (
+      sessionStorage.getItem('mongkulkar_admin_auth') === 'true' ||
+      current?.id === 'admin' ||
+      current?.phone === 'admin'
+    );
   });
 
   useEffect(() => {
-    if (sessionStorage.getItem('mongkulkar_admin_auth') === 'true') {
+    const current = getLoggedMember();
+    if (
+      sessionStorage.getItem('mongkulkar_admin_auth') === 'true' ||
+      current?.id === 'admin' ||
+      current?.phone === 'admin'
+    ) {
       setIsAuthenticated(true);
+      sessionStorage.setItem('mongkulkar_admin_auth', 'true');
     }
   }, []);
 
@@ -318,13 +329,31 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ lang, onExitAdmi
     const trimmedUser = username.trim().toLowerCase();
     const trimmedPass = password.trim();
     if (trimmedUser === 'admin' && (trimmedPass === 'admin' || trimmedPass === 'admin123')) {
+      const adminAccount: MemberAccount = {
+        id: 'admin',
+        name: lang === 'km' ? 'គណនី Admin System' : 'Admin System',
+        phone: 'admin',
+        password: 'admin',
+        createdAt: new Date().toISOString(),
+        lastLoginAt: new Date().toISOString(),
+        activatedPackage: {
+          packageType: '35',
+          activationCode: 'ADMIN-VIP',
+          memberName: 'Admin System',
+          memberPhone: 'admin',
+          maxPhotos: 10,
+          unlockedAt: new Date().toISOString(),
+        },
+        notifications: [],
+      };
+      setLoggedMember(adminAccount);
       setIsAuthenticated(true);
       sessionStorage.setItem('mongkulkar_admin_auth', 'true');
     } else {
       setLoginError(
         lang === 'km'
-          ? 'Username ឬ Password មិនត្រឹមត្រូវឡើយ! (Username: admin, Password: admin)'
-          : 'Invalid Username or Password! (Username: admin, Password: admin)'
+          ? 'Username ឬ Password មិនត្រឹមត្រូវឡើយ! (Username: admin, Password: admin/admin123)'
+          : 'Invalid Username or Password! (Username: admin, Password: admin/admin123)'
       );
     }
   };

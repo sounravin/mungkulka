@@ -173,10 +173,11 @@ export default function App() {
   const isAdmin = loggedMember?.id === 'admin' || loggedMember?.phone === 'admin' || sessionStorage.getItem('mongkulkar_admin_auth') === 'true';
 
   useEffect(() => {
-    if (isAdmin) {
+    if (loggedMember?.id === 'admin' || loggedMember?.phone === 'admin') {
+      sessionStorage.setItem('mongkulkar_admin_auth', 'true');
       setCurrentView('admin');
     }
-  }, [isAdmin]);
+  }, [loggedMember]);
 
   const handleLanguageToggle = () => {
     setLang((prev) => (prev === 'km' ? 'en' : 'km'));
@@ -188,8 +189,10 @@ export default function App() {
 
   // Safe view navigation logic (restricts direct Studio builder access unless unlocked)
   const handleNavigate = (view: 'landing' | 'templates' | 'builder' | 'demo' | 'admin') => {
-    if (isAdmin) {
+    if (view === 'admin') {
+      sessionStorage.setItem('mongkulkar_admin_auth', 'true');
       setCurrentView('admin');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
       return;
     }
     if (view === 'builder' && !unlockedPackage) {

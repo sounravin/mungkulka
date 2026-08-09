@@ -560,17 +560,48 @@ async function startServer() {
       return res.status(400).json({ error: "Missing required order fields" });
     }
 
+    const trimmedPhone = String(memberPhone).trim();
+    const cleanPhone = trimmedPhone.replace(/\s+/g, "");
+
+    // Ensure member account exists in dbData.members
+    let member = dbData.members.find((m) => (m.phone || "").replace(/\s+/g, "") === cleanPhone);
+    const nowIso = new Date().toISOString();
+
+    if (!member) {
+      member = {
+        id: "mem-" + Date.now(),
+        name: String(memberName).trim(),
+        phone: trimmedPhone,
+        createdAt: nowIso,
+        lastLoginAt: nowIso,
+        notifications: [
+          {
+            id: "notif-" + Date.now(),
+            memberPhone: trimmedPhone,
+            titleKm: "បានផ្ញើការបញ្ជាទិញកញ្ចប់សេវាកម្មជោគជ័យ!",
+            titleEn: "Package Order Submitted!",
+            messageKm: "ការបញ្ជាទិញរបស់អ្នកកំពុងរង់ចាំ Admin ពិនិត្យវិក្កយបត្រ និងអនុម័ត!",
+            messageEn: "Your order is pending Admin approval.",
+            isRead: false,
+            createdAt: nowIso,
+          },
+        ],
+      };
+      dbData.members.unshift(member);
+      broadcastRealtime("MEMBER_REGISTER", member);
+    }
+
     const newOrder: PackageOrder = {
       id: "order-" + Date.now(),
       orderCode: orderCode || `ORD-${packageType}-${Math.floor(1000 + Math.random() * 9000)}`,
       memberName: String(memberName).trim(),
-      memberPhone: String(memberPhone).trim(),
-      telegram: telegram ? String(telegram).trim() : String(memberPhone).trim(),
+      memberPhone: trimmedPhone,
+      telegram: telegram ? String(telegram).trim() : trimmedPhone,
       packageType: packageType || "35",
       price: price || (packageType === "35" ? 35 : 15),
       paymentRef: paymentRef ? String(paymentRef).trim() : `ABA-KHQR-${Math.floor(100000 + Math.random() * 900000)}`,
       paymentProofUrl,
-      createdAt: new Date().toISOString(),
+      createdAt: nowIso,
       status: "pending",
       maxPhotos: maxPhotos || (packageType === "35" ? 10 : 5),
     };

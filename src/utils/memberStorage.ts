@@ -38,8 +38,10 @@ const getLocalMembersBackup = (): MemberAccount[] => {
 
 const saveLocalMemberBackup = (member: MemberAccount) => {
   try {
+    if (!member || (!member.phone && !member.id)) return;
+    const memberPhoneKey = (member.phone || member.id || '').replace(/\s+/g, '');
     const list = getLocalMembersBackup();
-    const idx = list.findIndex((m) => m.phone.replace(/\s+/g, '') === member.phone.replace(/\s+/g, ''));
+    const idx = list.findIndex((m) => (m.phone || m.id || '').replace(/\s+/g, '') === memberPhoneKey);
     if (idx !== -1) {
       list[idx] = { ...list[idx], ...member };
     } else {
@@ -57,8 +59,11 @@ export const getLoggedMember = (): MemberAccount | null => {
 // Set logged-in member state
 export const setLoggedMember = (member: MemberAccount | null) => {
   inMemoryLoggedMember = member;
-  if (member && member.phone) {
-    sessionStorage.setItem(LOGGED_PHONE_KEY, member.phone);
+  if (member && (member.phone || member.id)) {
+    sessionStorage.setItem(LOGGED_PHONE_KEY, member.phone || member.id);
+    if (member.id === 'admin' || member.phone === 'admin') {
+      sessionStorage.setItem('mongkulkar_admin_auth', 'true');
+    }
     saveLocalMemberBackup(member);
   } else {
     sessionStorage.removeItem(LOGGED_PHONE_KEY);

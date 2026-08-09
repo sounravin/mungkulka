@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { safeFetchJson } from '../utils/apiClient';
 import {
   ShieldCheck,
   Lock,
@@ -159,13 +160,12 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ lang, onExitAdmi
   const [qrSaveSuccess, setQrSaveSuccess] = useState(false);
 
   useEffect(() => {
-    fetch('/api/admin/qr')
-      .then((res) => (res.ok ? res.json() : null))
-      .then((data) => {
-        if (data) {
-          if (data.qrImage) setQrImage(data.qrImage);
-          if (data.accountName) setQrAccountName(data.accountName);
-          if (data.accountNumber) setQrAccountNumber(data.accountNumber);
+    safeFetchJson('/api/admin/qr')
+      .then((res) => {
+        if (res.ok && res.data) {
+          if (res.data.qrImage) setQrImage(res.data.qrImage);
+          if (res.data.accountName) setQrAccountName(res.data.accountName);
+          if (res.data.accountNumber) setQrAccountNumber(res.data.accountNumber);
         }
       })
       .catch(() => {});
@@ -180,7 +180,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ lang, onExitAdmi
     };
 
     try {
-      await fetch('/api/admin/qr', {
+      await safeFetchJson('/api/admin/qr', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(config),
@@ -236,10 +236,9 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ lang, onExitAdmi
   // Load orders from Cloud API
   const loadOrders = async () => {
     try {
-      const res = await fetch('/api/orders');
-      if (res.ok) {
-        const data = await res.json();
-        setOrders(data);
+      const res = await safeFetchJson('/api/orders');
+      if (res.ok && res.data) {
+        setOrders(res.data);
       }
     } catch (e) {
       console.warn('Could not fetch orders from cloud server:', e);
@@ -249,10 +248,9 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ lang, onExitAdmi
   // Load registered member accounts from Cloud API
   const loadMembers = async () => {
     try {
-      const res = await fetch('/api/admin/members');
-      if (res.ok) {
-        const data = await res.json();
-        setMembers(data);
+      const res = await safeFetchJson('/api/admin/members');
+      if (res.ok && res.data) {
+        setMembers(res.data);
       }
     } catch (e) {
       console.warn('Could not fetch members from cloud server:', e);

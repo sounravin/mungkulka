@@ -25,6 +25,7 @@ import {
   AlertCircle,
   Loader2
 } from 'lucide-react';
+import { safeFetchJson } from '../utils/apiClient';
 import { PackageTier, PackageOrder, MemberAccount } from '../types';
 import { notifyRealtimeEvent } from '../utils/realtime';
 import { compressImage } from '../utils/imageCompressor';
@@ -177,14 +178,13 @@ export const PurchaseModal: React.FC<PurchaseModalProps> = ({
     };
 
     try {
-      const res = await fetch('/api/orders', {
+      const res = await safeFetchJson('/api/orders', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(newOrderPayload),
       });
-      if (res.ok) {
-        const created = await res.json();
-        newOrder = created;
+      if (res.ok && res.data) {
+        newOrder = res.data;
       }
     } catch (err) {
       console.warn('Backend API submission fallback to local storage:', err);

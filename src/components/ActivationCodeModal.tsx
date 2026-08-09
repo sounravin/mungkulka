@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { X, KeyRound, Sparkles, Wand2, AlertCircle, LogIn, CheckCircle2, ShieldCheck } from 'lucide-react';
+import { safeFetchJson } from '../utils/apiClient';
 import { UnlockedPackage, MemberAccount } from '../types';
 import { getLoggedMember, activateMemberPackage } from '../utils/memberStorage';
 
@@ -48,18 +49,17 @@ export const ActivationCodeModal: React.FC<ActivationCodeModalProps> = ({
 
     try {
       // 1. Try server endpoint
-      const res = await fetch('/api/activate-code', {
+      const res = await safeFetchJson('/api/activate-code', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ phone: loggedMember.phone, code }),
       });
 
-      const data = await res.json();
-      if (!res.ok) {
-        throw new Error(data.error || (lang === 'km' ? 'កូដ Activation មិនត្រឹមត្រូវ' : 'Invalid Activation Code'));
+      if (!res.ok || !res.data) {
+        throw new Error(res.error || (lang === 'km' ? 'កូដ Activation មិនត្រឹមត្រូវ' : 'Invalid Activation Code'));
       }
 
-      const unlocked: UnlockedPackage = data.activatedPackage;
+      const unlocked: UnlockedPackage = res.data.activatedPackage;
       activateMemberPackage(loggedMember.phone, unlocked);
       onUnlockStudio(unlocked);
       onClose();

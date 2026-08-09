@@ -17,6 +17,7 @@ import { WeddingInvitationData, TemplateId, Language, PackageTier, UnlockedPacka
 import { getLoggedMember, logoutMember, fetchCurrentLoggedMember } from './utils/memberStorage';
 import { subscribeRealtime } from './utils/realtime';
 import { fetchSystemConfigFromCloud } from './utils/systemConfig';
+import { safeFetchJson } from './utils/apiClient';
 import { X, Smartphone, Sparkles, ArrowLeft } from 'lucide-react';
 
 export default function App() {
@@ -44,9 +45,9 @@ export default function App() {
       }
 
       // Fetch specific edited invitation from cloud server
-      fetch(`/api/invitations/${inviteId}`)
+      safeFetchJson(`/api/invitations/${inviteId}`)
         .then((res) => {
-          if (res.ok) return res.json();
+          if (res.ok && res.data) return res.data;
           throw new Error('Invitation not found on server');
         })
         .then((data) => {
@@ -92,9 +93,9 @@ export default function App() {
   useEffect(() => {
     if (loggedMember && loggedMember.id !== 'admin' && loggedMember.phone !== 'admin') {
       const invId = `inv-${loggedMember.phone}`;
-      fetch(`/api/invitations/${invId}`)
+      safeFetchJson(`/api/invitations/${invId}`)
         .then((res) => {
-          if (res.ok) return res.json();
+          if (res.ok && res.data) return res.data;
           throw new Error('Not found');
         })
         .then((cloudData) => {
@@ -124,9 +125,9 @@ export default function App() {
   useEffect(() => {
     const refreshMemberFromCloud = async (phone: string) => {
       try {
-        const res = await fetch(`/api/members/current?phone=${encodeURIComponent(phone)}`);
-        if (res.ok) {
-          const fresh = await res.json();
+        const res = await safeFetchJson<MemberAccount>(`/api/members/current?phone=${encodeURIComponent(phone)}`);
+        if (res.ok && res.data) {
+          const fresh = res.data;
           setLoggedMember(fresh);
           if (fresh?.activatedPackage) {
             setUnlockedPackage(fresh.activatedPackage);
